@@ -26,7 +26,7 @@ public class TowerCombiner : MonoBehaviour
     {
         //10x10 is size 1
         targetProjector.size = new Vector3(_size.x * 0.1f, _size.y * 0.1f, 1);
-
+        combineTarget = (Texture2D)targetProjector.material.GetTexture("Base_Map");
     }
 
     bool[,] TextureToBoolArray(Texture2D targetTexture, Vector2Int size)
@@ -41,7 +41,7 @@ public class TowerCombiner : MonoBehaviour
         {
             for (int x = 0; x < width; x++)
             {
-                if (tTextureResized.GetPixel(x,y).r > 0.5)
+                if (tTextureResized.GetPixel(x, y).a > 0.5)
                 {
                     template[x, y] = true;
                     totalTrue++;
@@ -79,7 +79,7 @@ public class TowerCombiner : MonoBehaviour
         HashSet<int> towers;
         Debug.Log($"Looking from {pos.x},{pos.y} to {pos.x + template.GetLength(0)}, {pos.y + template.GetLength(1)}");
         int matches = grid.TemplateMatchPosition(template, grid.cells, pos, out towers);
-        Debug.Log($"Found {matches} matches.. towers found:{string.Join(", ", towers)}");
+        Debug.Log($"Found {matches}/.. towers found:{string.Join(", ", towers)}");
     }
 
     [Button]
@@ -94,6 +94,8 @@ public class TowerCombiner : MonoBehaviour
             (transform.localPosition.x - _targetSpawnArea.bounds.min.x) / (_targetSpawnArea.bounds.max.x - _targetSpawnArea.bounds.min.x),
             (transform.localPosition.y - _targetSpawnArea.bounds.min.y) / (_targetSpawnArea.bounds.max.y - _targetSpawnArea.bounds.min.y));
         Vector2Int gridPosInSquares = new Vector2Int((int)(gridPosP.x * grid.numCells.x),(int)(gridPosP.y * grid.numCells.y));
+        //move half the size of the target
+        gridPosInSquares -= new Vector2Int(_size.x / 2, _size.y / 2);
         print(gridPosInSquares);
         return gridPosInSquares;
     }

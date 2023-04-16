@@ -66,8 +66,8 @@ public class LevelGrid : MonoBehaviour
         {
             for (int j = 0; j < numCells.y; j++)
             {
-                Ray ray = new Ray(new Vector3(i*cellSize.x, j*cellSize.y, 1) - bounds.extents + cellSize/2, new Vector3(0, 0, -1));
-                //Debug.DrawRay(ray.origin, ray.direction, Color.red, 3.0f);
+                Ray ray = new Ray(new Vector3(i*cellSize.x, j*cellSize.y, 3.0f) - bounds.extents + cellSize/2, new Vector3(0, 0, -1));
+                //Debug.DrawRay(ray.origin, ray.direction, Color.red);
                 RaycastHit hitInfo;
                 if (Physics.Raycast(ray, out hitInfo, 10) && hitInfo.collider.tag == "Tower")
                 {
@@ -145,7 +145,7 @@ public class LevelGrid : MonoBehaviour
                     continue;
                 }
 
-                //Debug.Log($"{x + i} {y + j}");
+                //get the pixel value, each value expresses the tower ID
                 int searchPixel = 0;
                 try
                 {
@@ -158,7 +158,7 @@ public class LevelGrid : MonoBehaviour
 
                 bool templatePixel = template[i, j];
 
-                if (searchPixel != 0 && templatePixel == true)
+                if (searchPixel != 0 && templatePixel)
                 {
                     towers.Add(searchPixel);
                     matches++;
@@ -175,11 +175,14 @@ public class LevelGrid : MonoBehaviour
             }
         }
 
-        Debug.Log($"Looking from {pos.x},{pos.y} to {pos.x+ template.GetLength(0)}, {pos.y + template.GetLength(1)} found overlapping {FoundTowerPixels()}" );
+        // TODO: Store the target as a TargetHitInfo and show in editor
+        // Make small sample with the moving target
+
+        Debug.Log($"Looking from {pos.x},{pos.y} to {pos.x + template.GetLength(0)}, {pos.y + template.GetLength(1)} searching in {TotalCellsTargeted()} cells." );
         return matches;
     }
 
-    private int FoundTowerPixels()
+    private int TotalCellsTargeted()
     {
         int sumPixels = 0;
         for (int j = 0; j < debugTowers.GetLength(1); j++)
@@ -215,9 +218,9 @@ public class LevelGrid : MonoBehaviour
         {
             for (int j = 0; j < numCells.y; j++)
             {
-                if (cells[i,j] != 0)
+                if (cells[i, j] != 0)
                 {
-                    Gizmos.DrawSphere((new Vector3(i, j, 0)*cellSize.x) - bounds.extents + (cellSize*0.5f), 0.1f);
+                    Gizmos.DrawSphere((new Vector3(i, j, 0) * cellSize.x) - bounds.extents + (cellSize * 0.5f), 0.1f);
                 }
             }
         }
@@ -229,9 +232,46 @@ public class LevelGrid : MonoBehaviour
             {
                 if (debugTowers[i, j])
                 {
-                    Gizmos.DrawSphere(new Vector3(i, j, 0) * cellSize.x - bounds.extents + cellSize / 2, 0.1f);
+                    Gizmos.DrawSphere((new Vector3(i, j, 0) * cellSize.x) - bounds.extents + (cellSize / 2), 0.1f);
                 }
             }
         }
     }
+}
+
+/// <summary>
+/// Information container for the target hits.
+/// </summary>
+public class TargetHitInfo
+{
+    /// <summary>
+    /// Gets the Total Cells that the target has active.
+    /// </summary>
+    public int TotalCellsTargeted { get; private set; }
+
+    /// <summary>
+    /// Gets the Total number of towers that were in the active target.
+    /// </summary>
+    public int TotalCellsHit { get; private set; }
+
+    /// <summary>
+    /// The list of towers that are included in this target hit.
+    /// </summary>
+    public List<int> TowerIDs = new List<int>();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TargetHitInfo"/> class.
+    /// </summary>
+    /// <param name="totalCellsTargeted">Total Cells that the target has active.</param>
+    /// <param name="totalCellsHit">Total Cells that contained a tower.</param>
+    public TargetHitInfo(int totalCellsTargeted, int totalCellsHit)
+    {
+        TotalCellsTargeted = totalCellsTargeted;
+        TotalCellsHit = totalCellsHit;
+    }
+
+    /// <summary>
+    /// Gets the hit accuracy.
+    /// </summary>
+    public float HitAccuracy => TotalCellsTargeted / TotalCellsHit;
 }
