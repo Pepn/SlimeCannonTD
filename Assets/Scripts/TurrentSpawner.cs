@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[ExecuteAlways]
 public class TurrentSpawner : MonoBehaviour
 {
     private Vector3 currentAim;
     private bool selectedX, selectedY, selectedZ;
     private World world;
     [SerializeField] private GameObject aimTarget;
-    private Bounds selectionBounds;
+    public Bounds selectionBounds;
     private Vector3 startPosition;
 
     public GameObject towerPrefab;
@@ -19,14 +20,17 @@ public class TurrentSpawner : MonoBehaviour
     [SerializeField, Range(1, 10)] private float accuracyRange;
     [SerializeField, Range(1, 10)] private float reloadTime;
     [SerializeField] private bool visible;
+
     private enum Direction
     {
-        Up, Down, Left, Right
+        Up,
+        Down,
+        Left,
+        Right,
     }
-    private  Direction currentDirection = Direction.Up;
-    // Start is called before the first frame update
 
-    void Start()
+    private Direction currentDirection = Direction.Up;
+    private void Start()
     {
         world = GameManager.Instance.World;
         selectionBounds = inputArea.GetComponent<BoxCollider>().bounds;
@@ -34,8 +38,7 @@ public class TurrentSpawner : MonoBehaviour
         ResetSelection();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
         aimTarget.transform.position = currentAim;
         TimeStep();
@@ -95,6 +98,7 @@ public class TurrentSpawner : MonoBehaviour
                     currentAim.z = selectionBounds.max.z;
                     currentDirection = Direction.Down;
                 }
+
                 break;
             case Direction.Down:
                 currentAim.z -= speed * Time.deltaTime;
@@ -103,6 +107,7 @@ public class TurrentSpawner : MonoBehaviour
                     currentAim.z = selectionBounds.min.z;
                     currentDirection = Direction.Up;
                 }
+
                 break;
             case Direction.Right:
                 currentAim.x += speed * Time.deltaTime;
@@ -111,6 +116,7 @@ public class TurrentSpawner : MonoBehaviour
                     currentAim.x = selectionBounds.max.x;
                     currentDirection = Direction.Left;
                 }
+                
                 break;
             case Direction.Left:
                 currentAim.x -= speed * Time.deltaTime;
@@ -119,6 +125,7 @@ public class TurrentSpawner : MonoBehaviour
                     currentAim.x = selectionBounds.min.x;
                     currentDirection = Direction.Right;
                 }
+
                 break;
             default:
                 Debug.LogError("No Direction, something went wrong");

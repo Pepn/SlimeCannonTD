@@ -104,7 +104,7 @@ dotnet_diagnostic.SA1028.severity = warning
 dotnet_diagnostic.SA1100.severity = warning
 
 # Prefix local calls with this
-dotnet_diagnostic.SA1101.severity = warning
+dotnet_diagnostic.SA1101.severity = silent
 
 # Query clause should follow previous clause
 dotnet_diagnostic.SA1102.severity = warning

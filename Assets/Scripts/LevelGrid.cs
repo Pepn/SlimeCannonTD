@@ -9,7 +9,7 @@ public class LevelGrid : MonoBehaviour
 {
     [SerializeField, FoldoutGroup("Debug"), ReadOnly] private Vector3 cellSize;
     [SerializeField, FoldoutGroup("Debug"), ReadOnly] private Vector3 gridSize;
-    [SerializeField, OnValueChanged("InitGrid")] private Vector3Int numCells;
+    [SerializeField, OnValueChanged("InitGrid")] public Vector3Int numCells;
     [SerializeField] public int[,] cells;
     [SerializeField] public bool[,] debugTowers;
     [SerializeField] private GameObject floorPlane;
@@ -113,10 +113,24 @@ public class LevelGrid : MonoBehaviour
         }
     }
 
+    private void ClearArray(bool[,] array)
+    {
+        for (int j = 0; j < numCells.x; j++)
+        {
+            for (int i = 0; i < numCells.y; i++)
+            {
+                debugTowers[j, i] = false;
+            }
+        }
+    }
+
     public int TemplateMatchPosition(bool[,] template, int[,] searchSpace, Vector2Int pos, out HashSet<int> towers)
     {
         int matches = 0;
         towers = new HashSet<int>();
+
+        ClearArray(debugTowers);
+
         //loop through template image
         Debug.Log($"Position given {pos.x}, {pos.y}");
         for (int j = 0; j < template.GetLength(1); j++)
@@ -160,8 +174,26 @@ public class LevelGrid : MonoBehaviour
                 }
             }
         }
-        Debug.Log($"Looking from {pos.x},{pos.y} to {pos.x+ template.GetLength(0)}, {pos.y + template.GetLength(1)}" );
+
+        Debug.Log($"Looking from {pos.x},{pos.y} to {pos.x+ template.GetLength(0)}, {pos.y + template.GetLength(1)} found overlapping {FoundTowerPixels()}" );
         return matches;
+    }
+
+    private int FoundTowerPixels()
+    {
+        int sumPixels = 0;
+        for (int j = 0; j < debugTowers.GetLength(1); j++)
+        {
+            for (int i = 0; i < debugTowers.GetLength(0); i++)
+            {
+                if (debugTowers[i, j])
+                {
+                    sumPixels++;
+                }
+            }
+        }
+
+        return sumPixels;
     }
 
     private void OnDrawGizmos()

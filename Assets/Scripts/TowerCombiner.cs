@@ -3,21 +3,30 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using Sirenix.OdinInspector;
+using UnityEngine.Rendering.Universal;
+using DG.Tweening;
 
+[ExecuteAlways]
 public class TowerCombiner : MonoBehaviour
 {
-    [SerializeField] Texture2D combineTarget;
-    [SerializeField] LevelGrid grid;
-    // Start is called before the first frame update
-    void Start()
+    [SerializeField, FoldoutGroup("References")] private Texture2D combineTarget;
+    [SerializeField, FoldoutGroup("References")] private LevelGrid grid;
+
+    [SerializeField] private Vector2Int _size;
+    [SerializeField, FoldoutGroup("References")] private DecalProjector targetProjector;
+    [SerializeField, FoldoutGroup("References")] private TurrentSpawner _turretSpawner;
+    [SerializeField, FoldoutGroup("References")] private BoxCollider _targetSpawnArea;
+
+    private void Awake()
     {
-        
+
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        
+        //10x10 is size 1
+        targetProjector.size = new Vector3(_size.x * 0.1f, _size.y * 0.1f, 1);
+
     }
 
     bool[,] TextureToBoolArray(Texture2D targetTexture, Vector2Int size)
@@ -32,8 +41,7 @@ public class TowerCombiner : MonoBehaviour
         {
             for (int x = 0; x < width; x++)
             {
-                Debug.Log(tTextureResized.GetPixel(x, y).a);
-                if(tTextureResized.GetPixel(x,y).a > 0.5)
+                if (tTextureResized.GetPixel(x,y).r > 0.5)
                 {
                     template[x, y] = true;
                     totalTrue++;
@@ -65,12 +73,28 @@ public class TowerCombiner : MonoBehaviour
     }
 
     [Button]
-    public void TestTowerCombine(Vector2Int pos, Vector2Int size)
+    private void TestTowerCombine(Vector2Int pos)
     {
-        bool[,] template = TextureToBoolArray(combineTarget, size);
+        bool[,] template = TextureToBoolArray(combineTarget, _size);
         HashSet<int> towers;
         Debug.Log($"Looking from {pos.x},{pos.y} to {pos.x + template.GetLength(0)}, {pos.y + template.GetLength(1)}");
         int matches = grid.TemplateMatchPosition(template, grid.cells, pos, out towers);
         Debug.Log($"Found {matches} matches.. towers found:{string.Join(", ", towers)}");
+    }
+
+    [Button]
+    private void TestTowerCombineAtTarget()
+    {
+        TestTowerCombine(TargetToGridTransform());
+    }
+
+    private Vector2Int TargetToGridTransform()
+    {
+        Vector2 gridPosP = new Vector2(
+            (transform.localPosition.x - _targetSpawnArea.bounds.min.x) / (_targetSpawnArea.bounds.max.x - _targetSpawnArea.bounds.min.x),
+            (transform.localPosition.y - _targetSpawnArea.bounds.min.y) / (_targetSpawnArea.bounds.max.y - _targetSpawnArea.bounds.min.y));
+        Vector2Int gridPosInSquares = new Vector2Int((int)(gridPosP.x * grid.numCells.x),(int)(gridPosP.y * grid.numCells.y));
+        print(gridPosInSquares);
+        return gridPosInSquares;
     }
 }
