@@ -47,8 +47,6 @@ public class Weapon : MonoBehaviour
             GameObject b = Instantiate(bulletPrefab, transform.position, transform.rotation, transform.parent);
             b.GetComponent<Bullet>().SetTarget(target.transform);
         }
-
-        
     }
 
     private void AimAtTarget()

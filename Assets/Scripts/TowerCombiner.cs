@@ -73,17 +73,17 @@ public class TowerCombiner : MonoBehaviour
     }
 
     [Button]
-    private void TestTowerCombine(Vector2Int pos)
+    public void TestTowerCombine(Vector2Int pos)
     {
         bool[,] template = TextureToBoolArray(combineTarget, _size);
         HashSet<int> towers;
         Debug.Log($"Looking from {pos.x},{pos.y} to {pos.x + template.GetLength(0)}, {pos.y + template.GetLength(1)}");
-        int matches = grid.TemplateMatchPosition(template, grid.cells, pos, out towers);
-        Debug.Log($"Found {matches}/.. towers found:{string.Join(", ", towers)}");
+        TargetHitInfo hitInfo = grid.TemplateMatchPosition(template, grid.cells, pos, out towers);
+        Debug.Log(hitInfo.ToString());
     }
 
     [Button]
-    private void TestTowerCombineAtTarget()
+    public void TestTowerCombineAtTarget()
     {
         TestTowerCombine(TargetToGridTransform());
     }

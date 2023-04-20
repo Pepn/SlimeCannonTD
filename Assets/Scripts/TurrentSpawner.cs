@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[ExecuteAlways]
 public class TurrentSpawner : MonoBehaviour
 {
     private Vector3 currentAim;
@@ -74,7 +73,8 @@ public class TurrentSpawner : MonoBehaviour
     {
         var downDirection = -GameManager.Instance.World.Floor.transform.up;
         Physics.Raycast(transform.position, downDirection, out RaycastHit hit, LayerMask.GetMask("Floor"));
-        return hit.point;
+
+        return transform.position;
     }
 
     private void ResetSelection()
@@ -92,19 +92,19 @@ public class TurrentSpawner : MonoBehaviour
         switch (currentDirection)
         {
             case Direction.Up:
-                currentAim.z += speed * Time.deltaTime;
+                currentAim.y += speed * Time.deltaTime;
                 if (!selectionBounds.Contains(currentAim))
                 {
-                    currentAim.z = selectionBounds.max.z;
+                    currentAim.y = selectionBounds.max.y;
                     currentDirection = Direction.Down;
                 }
 
                 break;
             case Direction.Down:
-                currentAim.z -= speed * Time.deltaTime;
+                currentAim.y -= speed * Time.deltaTime;
                 if (!selectionBounds.Contains(currentAim))
                 {
-                    currentAim.z = selectionBounds.min.z;
+                    currentAim.y = selectionBounds.min.y;
                     currentDirection = Direction.Up;
                 }
 

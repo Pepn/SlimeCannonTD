@@ -50,7 +50,7 @@ public class GameManager : Singleton<GameManager>
         TowerManager = GetComponent<TowerManager>();
         EnemyManager = GetComponent<EnemyManager>();
 
-        World = GetComponentInChildren<World>();
+        World = FindObjectOfType<World>();
 
         //Make this game object persistent
         DontDestroyOnLoad(gameObject);
