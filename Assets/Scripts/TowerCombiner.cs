@@ -53,7 +53,7 @@ public class TowerCombiner : MonoBehaviour
             }
         }
 
-        Debug.Log($"Created bool array: {width}x{height} with {totalTrue} true values");
+        //Debug.Log($"Created bool array: {width}x{height} with {totalTrue} true values");
         return template;
     }
 
@@ -92,8 +92,10 @@ public class TowerCombiner : MonoBehaviour
     {
         Vector2 gridPosP = new Vector2(
             (transform.localPosition.x - _targetSpawnArea.bounds.min.x) / (_targetSpawnArea.bounds.max.x - _targetSpawnArea.bounds.min.x),
-            (transform.localPosition.y - _targetSpawnArea.bounds.min.y) / (_targetSpawnArea.bounds.max.y - _targetSpawnArea.bounds.min.y));
-        Vector2Int gridPosInSquares = new Vector2Int((int)(gridPosP.x * grid.numCells.x),(int)(gridPosP.y * grid.numCells.y));
+            (transform.localPosition.z - _targetSpawnArea.bounds.min.y) / (_targetSpawnArea.bounds.max.y - _targetSpawnArea.bounds.min.y));
+        Vector2Int gridPosInSquares = new Vector2Int((int)(gridPosP.x * grid.numCells.x), (int)(gridPosP.y * grid.numCells.y));
+        Debug.Log($"{transform.localPosition.z} {_targetSpawnArea.bounds.min.y} {_targetSpawnArea.bounds.max.y}");
+        Debug.Log($"{transform.localPosition.y} {_targetSpawnArea.bounds.min.y} {_targetSpawnArea.bounds.max.y}");
         //move half the size of the target
         gridPosInSquares -= new Vector2Int(_size.x / 2, _size.y / 2);
         print(gridPosInSquares);

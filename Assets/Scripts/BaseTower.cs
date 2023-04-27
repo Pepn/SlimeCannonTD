@@ -10,7 +10,7 @@ public abstract class BaseTower : MonoBehaviour
     [SerializeField] protected List<Weapon> weapons;
     public BaseTower()
     {
-        Debug.Log("CREATING TOWER..");
+        //Debug.Log("CREATING TOWER..");
     }
 
 

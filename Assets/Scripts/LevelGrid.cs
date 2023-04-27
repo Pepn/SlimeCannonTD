@@ -27,9 +27,8 @@ public class LevelGrid : MonoBehaviour
         debugTowers = new bool[numCells.x, numCells.y];
     }
 
-    void CreateGridOnObject(GameObject obj)
+    private void CreateGridOnObject(GameObject obj)
     {
-        print("creategrid");
         Bounds bounds = obj.GetComponent<Renderer>().bounds;
         gridSize = new Vector3(bounds.size.x, bounds.size.y, 0);
         cellSize = new Vector3(gridSize.x / numCells.x, gridSize.y / numCells.y, 0);
@@ -69,7 +68,7 @@ public class LevelGrid : MonoBehaviour
             {
                 Ray ray = new Ray(new Vector3(i*cellSize.x, j*cellSize.y, 0.5f) - bounds.extents + cellSize/2, new Vector3(0, 0, -1));
                 RaycastHit hitInfo;
-                Debug.DrawRay(ray.origin, ray.direction);
+                //Debug.DrawRay(ray.origin, ray.direction);
                 if (Physics.Raycast(ray, out hitInfo, 10) && hitInfo.collider.tag == "Tower")
                 {
                     cells[i, j] = hitInfo.collider.gameObject.GetComponent<BasicTower>().Id;
@@ -133,7 +132,7 @@ public class LevelGrid : MonoBehaviour
         ClearArray(debugTowers);
 
         //loop through template image
-        Debug.Log($"Position given {pos.x}, {pos.y}");
+        //Debug.Log($"Position given {pos.x}, {pos.y}");
         for (int j = 0; j < template.GetLength(1); j++)
         {
             for (int i = 0; i < template.GetLength(0); i++)
@@ -142,7 +141,7 @@ public class LevelGrid : MonoBehaviour
                 int gridY = pos.y + j;
                 if (gridX >= searchSpace.GetLength(0) || gridY >= searchSpace.GetLength(1) || gridX < 0 || gridY < 0)
                 {
-                    Debug.Log("Looking outside the grid skipping..");
+                    //Debug.Log("Looking outside the grid skipping..");
                     continue;
                 }
 
@@ -200,7 +199,7 @@ public class LevelGrid : MonoBehaviour
         return sumPixels;
     }
 
-    private void OnDrawGizmos()
+    private void OnDrawGizmosSelected()
     {
         // Draws a blue line from this transform to the target
         Gizmos.color = Color.blue;
