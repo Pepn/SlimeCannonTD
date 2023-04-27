@@ -19,7 +19,7 @@ public class TowerManager : Singleton<TowerManager>
     {
         BasicTower tower = Instantiate(towerPrefab).GetComponent<BasicTower>();
         tower.transform.position = pos;
-        tower.transform.rotation = Quaternion.identity;
+        tower.transform.localRotation = Quaternion.Euler(0,0,0);
         return tower;
     }
 }
