@@ -14,7 +14,6 @@ public class TowerCombiner : MonoBehaviour
 
     [SerializeField] private Vector2Int _size;
     [SerializeField, FoldoutGroup("References")] private DecalProjector targetProjector;
-    [SerializeField, FoldoutGroup("References")] private TurrentSpawner _turretSpawner;
     [SerializeField, FoldoutGroup("References")] private BoxCollider _targetSpawnArea;
 
     private void Awake()
@@ -76,10 +75,19 @@ public class TowerCombiner : MonoBehaviour
     public void TestTowerCombine(Vector2Int pos)
     {
         bool[,] template = TextureToBoolArray(combineTarget, _size);
-        HashSet<int> towers;
         Debug.Log($"Looking from {pos.x},{pos.y} to {pos.x + template.GetLength(0)}, {pos.y + template.GetLength(1)}");
-        TargetHitInfo hitInfo = grid.TemplateMatchPosition(template, grid.cells, pos, out towers);
+        TargetHitInfo hitInfo = grid.TemplateMatchPosition(template, grid.cells, pos);
         Debug.Log(hitInfo.ToString());
+
+        TowerCombineTransformTowers(hitInfo);
+    }
+
+    private void TowerCombineTransformTowers(TargetHitInfo hitInfo)
+    {
+        for (int i = 0; i < hitInfo.HitTowers.Count; i++)
+        {
+            TowerManager.Instance.RemoveTower(hitInfo.HitTowers[i]);
+        }
     }
 
     [Button]
@@ -92,13 +100,11 @@ public class TowerCombiner : MonoBehaviour
     {
         Vector2 gridPosP = new Vector2(
             (transform.localPosition.x - _targetSpawnArea.bounds.min.x) / (_targetSpawnArea.bounds.max.x - _targetSpawnArea.bounds.min.x),
-            (transform.localPosition.z - _targetSpawnArea.bounds.min.y) / (_targetSpawnArea.bounds.max.y - _targetSpawnArea.bounds.min.y));
+            (transform.localPosition.y - _targetSpawnArea.bounds.min.y) / (_targetSpawnArea.bounds.max.y - _targetSpawnArea.bounds.min.y));
         Vector2Int gridPosInSquares = new Vector2Int((int)(gridPosP.x * grid.numCells.x), (int)(gridPosP.y * grid.numCells.y));
-        Debug.Log($"{transform.localPosition.z} {_targetSpawnArea.bounds.min.y} {_targetSpawnArea.bounds.max.y}");
-        Debug.Log($"{transform.localPosition.y} {_targetSpawnArea.bounds.min.y} {_targetSpawnArea.bounds.max.y}");
-        //move half the size of the target
+
+        // move half the size of the target
         gridPosInSquares -= new Vector2Int(_size.x / 2, _size.y / 2);
-        print(gridPosInSquares);
         return gridPosInSquares;
     }
 }

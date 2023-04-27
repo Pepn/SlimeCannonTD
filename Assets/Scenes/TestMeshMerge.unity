@@ -641,7 +641,6 @@ MonoBehaviour:
   grid: {fileID: 1228516685}
   _size: {x: 50, y: 50}
   targetProjector: {fileID: 829132647}
-  _turretSpawner: {fileID: 829132649}
   _targetSpawnArea: {fileID: 1228516686}
 --- !u!114 &829132649
 MonoBehaviour:
@@ -656,16 +655,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   aimTarget: {fileID: 829132645}
-  selectionBounds:
-    m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 5.000001, y: 5, z: 5.000002}
+  towerCombiner: {fileID: 829132648}
   towerPrefab: {fileID: 5131248433476920054, guid: 76f840cc7f8f8df4fa060de506ba428a,
     type: 3}
   inputArea: {fileID: 1228516680}
+  selectionBounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 5.000001, y: 5, z: 5.000002}
+  combinerInterval: 5
   speed: 6.38
   accuracyRange: 4.65
   reloadTime: 4.02
-  visible: 1
 --- !u!1 &916231667
 GameObject:
   m_ObjectHideFlags: 0

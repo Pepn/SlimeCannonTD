@@ -5,19 +5,8 @@ using UnityEngine;
 public class BasicTower : BaseTower
 {
     // Start is called before the first frame update
-    public BasicTower()
-        : base()
+    protected override void Awake()
     {
-
-    }
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        base.Awake();
     }
 }

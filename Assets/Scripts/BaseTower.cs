@@ -2,16 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
+/// <summary>
+/// BaseTower class.
+/// </summary>
 public abstract class BaseTower : MonoBehaviour
 {
-    [field: SerializeField] public int Id { get;  set; }
+    private static int idCounter = 0;
     [SerializeField] protected GameObject towerPrefab;
     [SerializeField] protected List<Weapon> weapons;
-    public BaseTower()
+    [field: SerializeField] public int Id { get; private set; }
+
+    protected virtual void Awake()
     {
-        //Debug.Log("CREATING TOWER..");
+        Id = idCounter;
+        idCounter++;
+        Debug.Log($"Creating tower with id {Id}");
     }
-
-
 }

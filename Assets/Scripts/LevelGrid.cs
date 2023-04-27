@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Sirenix.OdinInspector;
 using System.Linq;
+using Sirenix.Utilities;
 
 [ExecuteAlways]
 public class LevelGrid : MonoBehaviour
@@ -38,10 +39,6 @@ public class LevelGrid : MonoBehaviour
     void Update()
     {
         UpdateGrid();
-        if (Keyboard.current[Key.Space].wasPressedThisFrame)
-        {
-            FindObjectOfType<TowerCombiner>().TestTowerCombineAtTarget();
-        }
     }
 
     void TestTemplateMatch()
@@ -124,10 +121,10 @@ public class LevelGrid : MonoBehaviour
         }
     }
 
-    public TargetHitInfo TemplateMatchPosition(bool[,] template, int[,] searchSpace, Vector2Int pos, out HashSet<int> towers)
+    public TargetHitInfo TemplateMatchPosition(bool[,] template, int[,] searchSpace, Vector2Int pos)
     {
         int matches = 0;
-        towers = new HashSet<int>();
+        List<BaseTower> towers = new List<BaseTower>();
 
         ClearArray(debugTowers);
 
@@ -141,7 +138,6 @@ public class LevelGrid : MonoBehaviour
                 int gridY = pos.y + j;
                 if (gridX >= searchSpace.GetLength(0) || gridY >= searchSpace.GetLength(1) || gridX < 0 || gridY < 0)
                 {
-                    //Debug.Log("Looking outside the grid skipping..");
                     continue;
                 }
 
@@ -160,7 +156,8 @@ public class LevelGrid : MonoBehaviour
 
                 if (searchPixel != 0 && templatePixel)
                 {
-                    towers.Add(searchPixel);
+                    Debug.Log($"ADDING TOWER with id: {searchPixel}");
+                    towers.Add(TowerManager.Instance.GetTower(searchPixel));
                     matches++;
                 }
 
@@ -177,7 +174,7 @@ public class LevelGrid : MonoBehaviour
 
         // TODO: Store the target as a TargetHitInfo and show in editor
         // Make small sample with the moving target
-        TargetHitInfo hitInfo = new TargetHitInfo(TotalCellsTargeted(), matches, towers.ToList());
+        TargetHitInfo hitInfo = new TargetHitInfo(TotalCellsTargeted(), matches, towers.Distinct().ToList());
         //Debug.Log($"Looking from {pos.x},{pos.y} to {pos.x + template.GetLength(0)}, {pos.y + template.GetLength(1)} searching in {TotalCellsTargeted()} cells." );
         return hitInfo;
     }
@@ -257,7 +254,7 @@ public class TargetHitInfo
     /// <summary>
     /// Gets The list of towers that are included in this target hit.
     /// </summary>
-    public List<int> TowerIDs { get; private set; } = new List<int>();
+    public List<BaseTower> HitTowers { get; private set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TargetHitInfo"/> class.
@@ -265,15 +262,16 @@ public class TargetHitInfo
     /// <param name="totalCellsTargeted">Total Cells that the target has active.</param>
     /// <param name="totalCellsHit">Total Cells that contained a tower.</param>
     /// <param name="towers">List of tower IDs that was found in the target hit.</param>
-    public TargetHitInfo(int totalCellsTargeted, int totalCellsHit, List<int> towers)
+    public TargetHitInfo(int totalCellsTargeted, int totalCellsHit, List<BaseTower> towers)
     {
         TotalCellsTargeted = totalCellsTargeted;
         TotalCellsHit = totalCellsHit;
-        TowerIDs.Concat(towers);
+        HitTowers = towers;
+        Debug.Log($"Concat list {HitTowers.Count}");
     }
 
     /// <inheritdoc/>
-    public override string ToString() => $"(Target Hit Info: {TotalCellsHit}/{TotalCellsTargeted}, Accuracy: {HitAccuracy.ToString("0.00")}";
+    public override string ToString() => $"(Target Hit Info: {TotalCellsHit}/{TotalCellsTargeted}, Accuracy: {HitAccuracy.ToString("0.00")}, TowersHit: {HitTowers.Count}";
 
     /// <summary>
     /// Gets the hit accuracy.

@@ -1,24 +1,27 @@
+using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class TurrentSpawner : MonoBehaviour
+public class Cannon : MonoBehaviour
 {
+    [SerializeField, Required, FoldoutGroup("References")] private GameObject aimTarget;
+    [SerializeField, Required, FoldoutGroup("References")] private TowerCombiner towerCombiner;
+    [SerializeField, Required, FoldoutGroup("References")] public GameObject towerPrefab;
+    [SerializeField, Required, FoldoutGroup("References")] public GameObject inputArea;
+    [SerializeField, Required, FoldoutGroup("References")] public Bounds selectionBounds;
+
+    [SerializeField, FoldoutGroup("Settings")] private int combinerInterval;
+    [SerializeField, FoldoutGroup("Settings"), Range(1, 10)] private float speed;
+    [SerializeField, FoldoutGroup("Settings"), Range(1, 10)] private float accuracyRange;
+    [SerializeField, FoldoutGroup("Settings"), Range(1, 10)] private float reloadTime;
+
     private Vector3 currentAim;
     private bool selectedX, selectedY, selectedZ;
     private World world;
-    [SerializeField] private GameObject aimTarget;
-    public Bounds selectionBounds;
     private Vector3 startPosition;
-
-    public GameObject towerPrefab;
-    public GameObject inputArea;
-    [Header("Settings")]
-    [SerializeField, Range(1, 10)] private float speed;
-    [SerializeField, Range(1, 10)] private float accuracyRange;
-    [SerializeField, Range(1, 10)] private float reloadTime;
-    [SerializeField] private bool visible;
+    private int shootCounter = 0;
 
     private enum Direction
     {
@@ -55,16 +58,32 @@ public class TurrentSpawner : MonoBehaviour
             }
 
         }
+
         if (selectedX && selectedY)
         {
+            ShootCannon();
+        }
+    }
+
+    private void ShootCannon()
+    {
+        if (shootCounter % combinerInterval == 0)
+        {
+            //combine
+            towerCombiner.TestTowerCombineAtTarget();
+        }
+        else
+        {
             PlaceTower();
-            ResetSelection();
         }
 
+        shootCounter++;
+        ResetSelection();
     }
 
     public void PlaceTower()
     {
+        Debug.Log($"Placing Tower");
         var bT = TowerManager.Instance.CreateTower(towerPrefab, PlaneHitPoint());
         TowerManager.Instance.AddTower(bT);
     }
