@@ -18,7 +18,7 @@ public class Cannon : MonoBehaviour
     [SerializeField, FoldoutGroup("Settings"), Range(1, 10)] private float reloadTime;
 
     private Vector3 currentAim;
-    private bool selectedX, selectedY, selectedZ;
+    private bool selectedX, selectedY;
     private World world;
     private Vector3 startPosition;
     private int shootCounter = 0;
@@ -67,6 +67,7 @@ public class Cannon : MonoBehaviour
 
     private void ShootCannon()
     {
+        shootCounter++;
         if (shootCounter % combinerInterval == 0)
         {
             //combine
@@ -77,15 +78,13 @@ public class Cannon : MonoBehaviour
             PlaceTower();
         }
 
-        shootCounter++;
         ResetSelection();
     }
 
-    public void PlaceTower()
+    private void PlaceTower()
     {
         Debug.Log($"Placing Tower");
-        var bT = TowerManager.Instance.CreateTower(towerPrefab, PlaneHitPoint());
-        TowerManager.Instance.AddTower(bT);
+        TowerManager.Instance.CreateTower(towerPrefab, PlaneHitPoint());
     }
 
     private Vector3 PlaneHitPoint()
@@ -101,7 +100,6 @@ public class Cannon : MonoBehaviour
         currentAim = startPosition;
         selectedX = false;
         selectedY = false;
-        selectedZ = false;
         currentDirection = Direction.Up;
     }
 
@@ -135,7 +133,7 @@ public class Cannon : MonoBehaviour
                     currentAim.x = selectionBounds.max.x;
                     currentDirection = Direction.Left;
                 }
-                
+
                 break;
             case Direction.Left:
                 currentAim.x -= speed * Time.deltaTime;

@@ -31,12 +31,6 @@ public class World : MonoBehaviour
     {
     }
 
-    public void AddObject(Transform obj, Transform parent)
-    {
-        obj.SetParent(parent.transform);
-        //UpdateNavMesh();
-    }
-
     private void UpdateNavMesh()
     {
         throw new NotImplementedException();

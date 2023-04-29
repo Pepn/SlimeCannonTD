@@ -10,6 +10,7 @@ public abstract class BaseTower : MonoBehaviour
     private static int idCounter = 0;
     [SerializeField] protected GameObject towerPrefab;
     [SerializeField] protected List<Weapon> weapons;
+    [field: SerializeField] public float Weight { get; protected set; } = 1.0f;
     [field: SerializeField] public int Id { get; private set; }
 
     protected virtual void Awake()

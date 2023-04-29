@@ -11,10 +11,15 @@ public class TowerCombiner : MonoBehaviour
 {
     [SerializeField, FoldoutGroup("References")] private Texture2D combineTarget;
     [SerializeField, FoldoutGroup("References")] private LevelGrid grid;
-
-    [SerializeField] private Vector2Int _size;
     [SerializeField, FoldoutGroup("References")] private DecalProjector targetProjector;
     [SerializeField, FoldoutGroup("References")] private BoxCollider _targetSpawnArea;
+
+    [SerializeField, FoldoutGroup("Settings")] private List<TargetInfoSO> targets = new List<TargetInfoSO>();
+    [SerializeField, FoldoutGroup("Settings")] private Vector2Int _size;
+
+    [SerializeField, FoldoutGroup("Debug"), ReadOnly] private Vector3 centerCombinedTowers;
+    [SerializeField, FoldoutGroup("Debug"), ReadOnly] private TargetInfoSO currentTarget;
+
 
     private void Awake()
     {
@@ -24,8 +29,10 @@ public class TowerCombiner : MonoBehaviour
     private void Update()
     {
         //10x10 is size 1
+        currentTarget = targets[0];
         targetProjector.size = new Vector3(_size.x * 0.1f, _size.y * 0.1f, 1);
-        combineTarget = (Texture2D)targetProjector.material.GetTexture("Base_Map");
+        targetProjector.material = currentTarget.material;
+        combineTarget = (Texture2D)currentTarget.material.GetTexture("Base_Map");
     }
 
     bool[,] TextureToBoolArray(Texture2D targetTexture, Vector2Int size)
@@ -79,15 +86,93 @@ public class TowerCombiner : MonoBehaviour
         TargetHitInfo hitInfo = grid.TemplateMatchPosition(template, grid.cells, pos);
         Debug.Log(hitInfo.ToString());
 
-        TowerCombineTransformTowers(hitInfo);
+        StartCoroutine(TowerCombineTransformTowers(hitInfo));
     }
 
-    private void TowerCombineTransformTowers(TargetHitInfo hitInfo)
+    private IEnumerator TowerCombineTransformTowers(TargetHitInfo hitInfo)
     {
+        // calculate center
+        centerCombinedTowers = CalculateCenterPosition(hitInfo.HitTowers);
+
+        // move towers towards each other
+        yield return StartCoroutine(MoveObjectsTowardsEachOther(hitInfo.HitTowers, centerCombinedTowers, 1.0f));
+
+        // merge meshes to one single mesh ?
+        TowerManager.Instance.CreateTower(currentTarget.towerPrefab, centerCombinedTowers);
+
+        // remove towers
         for (int i = 0; i < hitInfo.HitTowers.Count; i++)
         {
+            Debug.Log($"Deleting tower..");
             TowerManager.Instance.RemoveTower(hitInfo.HitTowers[i]);
         }
+
+        // recolor mesh to show upgrade version
+
+        // spawn new combined tower
+
+        yield return null;
+    }
+
+    /// <summary>
+    /// Coroutine to move the objects towards each other until they collide.
+    /// </summary>
+    private IEnumerator MoveObjectsTowardsEachOther(List<BaseTower> towers, Vector3 center, float mergeDuration)
+    {
+        List<bool> collidedTowers = Enumerable.Range(0, towers.Count).Select(i => false).ToList();
+        float t = 0.0f;
+        while (!collidedTowers.Exists(t => false) && t <= mergeDuration)
+        {
+            t += Time.deltaTime;
+
+            // Move the objects towards the center position
+            for (int i = 0; i < towers.Count; i++)
+            {
+                if (!collidedTowers[i])
+                {
+                    towers[i].transform.position = Vector3.Lerp(towers[i].transform.position, center, t);
+                }
+            }
+
+            // Check for collisions between the objects
+            for (int i = 0; i < towers.Count; i++)
+            {
+                for (int j = i + 1; j < towers.Count; j++)
+                {
+                    if (towers[i].GetComponent<Collider>().bounds.Intersects(towers[j].GetComponent<Collider>().bounds))
+                    {
+                        collidedTowers[i] = true;
+                        collidedTowers[j] = true;
+                    }
+                }
+            }
+
+            yield return null;
+        }
+    }
+
+    /// <summary>
+    /// Calculate and return the center position.
+    /// </summary>
+    /// <param name="towers">List of towers to get the centre for.</param>
+    /// <returns>The center position.</returns>
+    public Vector3 CalculateCenterPosition(List<BaseTower> towers)
+    {
+        Vector3 centerPosition = Vector2.zero;
+        float totalWeight = 0f;
+
+        for (int i = 0; i < towers.Count; i++)
+        {
+            centerPosition += towers[i].transform.position * towers[i].Weight;
+            totalWeight += towers[i].Weight;
+        }
+
+        if (totalWeight > 0)
+        {
+            centerPosition /= totalWeight;
+        }
+
+        return centerPosition;
     }
 
     [Button]
@@ -106,5 +191,11 @@ public class TowerCombiner : MonoBehaviour
         // move half the size of the target
         gridPosInSquares -= new Vector2Int(_size.x / 2, _size.y / 2);
         return gridPosInSquares;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawSphere(centerCombinedTowers, .2f);
     }
 }
