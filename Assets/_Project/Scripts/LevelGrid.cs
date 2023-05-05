@@ -15,7 +15,7 @@ public class LevelGrid : MonoBehaviour
     [SerializeField, OnValueChanged("InitGrid")] public Vector3Int numCells;
     [SerializeField] public int[,] cells;
     [SerializeField] public bool[,] debugTowers;
-    [SerializeField] private GameObject floorPlane;
+    [field: SerializeField] public GameObject FloorPlane { get; private set; }
 
     public Action OnGridChanged;
 
@@ -32,7 +32,7 @@ public class LevelGrid : MonoBehaviour
 
     void InitGrid()
     {
-        CreateGridOnObject(floorPlane);
+        CreateGridOnObject(FloorPlane);
         cells = new int[numCells.x, numCells.y];
         debugTowers = new bool[numCells.x, numCells.y];
     }
@@ -46,17 +46,27 @@ public class LevelGrid : MonoBehaviour
 
     private void UpdateGrid()
     {
-        Bounds bounds = floorPlane.GetComponent<Renderer>().bounds;
+        Bounds bounds = FloorPlane.GetComponent<Renderer>().bounds;
         for (int i = 0; i < numCells.x; i++)
         {
             for (int j = 0; j < numCells.y; j++)
             {
-                Ray ray = new Ray(new Vector3(i*cellSize.x, j*cellSize.y, 0.5f) - bounds.extents + cellSize/2, new Vector3(0, 0, -1));
+                Ray ray = new Ray(new Vector3(i*cellSize.x, j*cellSize.y, -5.0f) - bounds.extents + cellSize/2, new Vector3(0, 0, 10));
                 RaycastHit hitInfo;
-                //Debug.DrawRay(ray.origin, ray.direction);
-                if (Physics.Raycast(ray, out hitInfo, 10) && hitInfo.collider.tag == "Tower")
+                //Debug.DrawRay(ray.origin, ray.direction*100);
+                if (Physics.Raycast(ray, out hitInfo) && hitInfo.collider.tag == "Tower")
                 {
-                    cells[i, j] = hitInfo.collider.gameObject.GetComponent<BasicTower>().Id;
+                    if (cells[i, j] == 0)
+                    {
+                        cells[i, j] = hitInfo.collider.gameObject.GetComponent<BasicTower>().Id;
+                    }
+                    else //its impossible to have a single value array value store multiple towers so just pick one of the towers at random
+                    {
+                        if(UnityEngine.Random.value > 0.5f)
+                        {
+                            cells[i, j] = hitInfo.collider.gameObject.GetComponent<BasicTower>().Id;
+                        }
+                    }
                 }
                 else
                 {
@@ -188,7 +198,7 @@ public class LevelGrid : MonoBehaviour
     {
         // Draws a blue line from this transform to the target
         Gizmos.color = Color.blue;
-        Bounds bounds = floorPlane.GetComponent<Renderer>().bounds;
+        Bounds bounds = FloorPlane.GetComponent<Renderer>().bounds;
         for (int i = 0; i < numCells.x; ++i)
         {
             Gizmos.DrawLine(new Vector3(i*cellSize.x, 0, 0) - bounds.extents, new Vector3(i*cellSize.x, gridSize.y, 0) - bounds.extents);

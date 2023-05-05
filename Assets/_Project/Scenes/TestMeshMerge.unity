@@ -132,7 +132,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 20847446}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Towers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -631,6 +631,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4979742710808746377, guid: 76f840cc7f8f8df4fa060de506ba428a,
+        type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5131248433476920054, guid: 76f840cc7f8f8df4fa060de506ba428a,
         type: 3}
       propertyPath: m_Name
@@ -668,7 +673,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 829132645}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.19}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -736,7 +741,7 @@ MonoBehaviour:
   inputArea: {fileID: 1169261858}
   selectionBounds:
     m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 5.000001, y: 5, z: 5.000002}
+    m_Extent: {x: 5.000001, y: 5, z: 1}
   aimTarget: {fileID: 829132645}
   towerCombiner: {fileID: 829132648}
   levelGrid: {fileID: 1169261863}
@@ -1095,7 +1100,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 10, y: 3.15, z: 10.000002}
+  m_Size: {x: 10, y: 0.01, z: 10.000002}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &1169261863
 MonoBehaviour:
@@ -1112,7 +1117,7 @@ MonoBehaviour:
   cellSize: {x: 0.1, y: 0.10000001, z: 0}
   gridSize: {x: 10, y: 20.000002, z: 0}
   numCells: {x: 100, y: 200, z: 0}
-  floorPlane: {fileID: 1169261858}
+  <FloorPlane>k__BackingField: {fileID: 1169261858}
 --- !u!1 &1228516680
 GameObject:
   m_ObjectHideFlags: 0
@@ -1122,7 +1127,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1228516684}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}

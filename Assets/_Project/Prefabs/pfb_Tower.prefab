@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2622251251782973811}
   - component: {fileID: 7663903340120428601}
   - component: {fileID: 4979742710808746377}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: pfb_Tower
   m_TagString: Tower
   m_Icon: {fileID: 0}

@@ -83,16 +83,14 @@ public class Cannon : MonoBehaviour
 
     private void PlaceTower()
     {
-        Debug.Log($"Placing Tower");
-        TowerManager.Instance.CreateTower(towerPrefab, PlaneHitPoint());
+        TowerManager.Instance.CreateTower(towerPrefab, PlaneHitPoint() - new Vector3(0, 0, towerPrefab.GetComponent<BoxCollider>().size.z * 0.5f));
     }
 
     private Vector3 PlaneHitPoint()
     {
-        var downDirection = -GameManager.Instance.World.Floor.transform.up;
-        Physics.Raycast(transform.position, downDirection, out RaycastHit hit, LayerMask.GetMask("Floor"));
-
-        return transform.position;
+        Vector3 downDirection = -levelGrid.FloorPlane.transform.up;
+        Physics.Raycast(transform.position + (levelGrid.FloorPlane.transform.up * 5), downDirection, out RaycastHit hit, 100, LayerMask.GetMask("Floor"));
+        return hit.point;
     }
 
     private void ResetSelection()
@@ -101,6 +99,13 @@ public class Cannon : MonoBehaviour
         selectedX = false;
         selectedY = false;
         currentDirection = Direction.Up;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Vector3 downDirection = -levelGrid.FloorPlane.transform.up;
+        Gizmos.DrawRay(transform.position + (levelGrid.FloorPlane.transform.up * 5), downDirection*100);
     }
 
     private void TimeStep()
