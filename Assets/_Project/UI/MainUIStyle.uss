@@ -1,0 +1,3 @@
+.unity-text-element {
+    -unity-font-definition: url('project://database/Assets/_Project/Visuals/Fonts/Pulang%20SDF.asset?fileID=11400000&guid=24060ab73b3164d4cb387e8f3505d707&type=2#Pulang SDF');
+}

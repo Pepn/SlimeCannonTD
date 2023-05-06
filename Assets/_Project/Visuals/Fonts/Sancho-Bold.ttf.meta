@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 6844748546ce1d34ba704af4b7379340
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Sancho
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 561c134c48f5b334e9345f60d473eb8f, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

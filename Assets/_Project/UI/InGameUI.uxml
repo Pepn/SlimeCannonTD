@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/_Project/UI/MainUIStyle.uss?fileID=7433441132597879392&amp;guid=4a70616fa47234c49ab165972089765e&amp;type=3#MainUIStyle" />
+    <Style src="project://database/Assets/_Project/UI/InGameUIStyle.uss?fileID=7433441132597879392&amp;guid=6f35bfe37bf66fa438c6ff117233489b&amp;type=3#InGameUIStyle" />
+    <ui:VisualElement name="Container" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
+        <ui:Button text="Upgrade" display-tooltip-when-elided="true" name="UpgradeButton" tooltip="Upgrade your Cannon!" class="UpgradeButton" />
+    </ui:VisualElement>
+</ui:UXML>

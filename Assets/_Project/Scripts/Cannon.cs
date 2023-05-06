@@ -69,21 +69,21 @@ public class Cannon : MonoBehaviour
         shootCounter++;
         if (shootCounter % combinerInterval == 0)
         {
-            //combine
+            Debug.Log("Combining Towers..");
             towerCombiner.TestTowerCombineAtTarget();
         }
         else
         {
             PlaceTower();
-            levelGrid.OnGridChanged?.Invoke();
         }
 
+        levelGrid.IsGridDirty = true;
         ResetSelection();
     }
 
     private void PlaceTower()
     {
-        TowerManager.Instance.CreateTower(towerPrefab, PlaneHitPoint() - new Vector3(0, 0, towerPrefab.GetComponent<BoxCollider>().size.z * 0.5f));
+        TowerManager.Instance.CreateTower(towerPrefab, PlaneHitPoint(), 1.0f);
     }
 
     private Vector3 PlaneHitPoint()

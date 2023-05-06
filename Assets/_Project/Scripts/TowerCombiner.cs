@@ -86,23 +86,42 @@ public class TowerCombiner : MonoBehaviour
         TargetHitInfo hitInfo = grid.TemplateMatchPosition(template, grid.cells, pos);
         Debug.Log(hitInfo.ToString());
 
+
         StartCoroutine(TowerCombineTransformTowers(hitInfo));
     }
 
+    private float CalcNewTowerWeight(TargetHitInfo hitInfo) => 
+        Mathf.Max(hitInfo.HitTowers.Sum(t => t.Weight) * hitInfo.HitAccuracy, MinNewTowerWeight(hitInfo));
+
+    private float MinNewTowerWeight(TargetHitInfo hitInfo) => (hitInfo.HitTowers.Count * hitInfo.HitAccuracy) + 1;
+
     private IEnumerator TowerCombineTransformTowers(TargetHitInfo hitInfo)
     {
-        // calculate center
-        centerCombinedTowers = CalculateCenterPosition(hitInfo.HitTowers);
+        if (hitInfo.HitTowers != null && hitInfo.HitTowers.Count != 0)
+        {
+            // calculate center
+            centerCombinedTowers = CalculateCenterPosition(hitInfo.HitTowers);
+        }
+        else
+        {
+            Debug.LogWarning($"HitInfo is Null");
+        }
 
         // move towers towards each other
-        yield return StartCoroutine(MoveObjectsTowardsEachOther(hitInfo.HitTowers, centerCombinedTowers, 1.0f));
+        yield return StartCoroutine(MoveObjectsTowardsEachOther(hitInfo.HitTowers, centerCombinedTowers, 0.1f));
 
         // merge meshes to one single mesh ?
-        TowerManager.Instance.CreateTower(currentTarget.TowerPrefab, centerCombinedTowers);
+        TowerManager.Instance.CreateTower(currentTarget.TowerPrefab, centerCombinedTowers, CalcNewTowerWeight(hitInfo));
 
         // remove towers
         for (int i = 0; i < hitInfo.HitTowers.Count; i++)
         {
+            if (hitInfo.HitTowers[i] == null)
+            {
+                Debug.LogWarning("For  some reason this tower is null, skipping..");
+                continue;
+            }
+
             Debug.Log($"Deleting tower..");
             TowerManager.Instance.RemoveTower(hitInfo.HitTowers[i]);
         }
@@ -111,7 +130,6 @@ public class TowerCombiner : MonoBehaviour
 
         // spawn new combined tower
 
-        grid.OnGridChanged?.Invoke();
         yield return null;
     }
 
@@ -129,6 +147,11 @@ public class TowerCombiner : MonoBehaviour
             // Move the objects towards the center position
             for (int i = 0; i < towers.Count; i++)
             {
+                if (!towers[i])
+                {
+                    continue;
+                }
+
                 if (!collidedTowers[i])
                 {
                     towers[i].transform.position = Vector3.Lerp(towers[i].transform.position, center, t);
@@ -140,6 +163,11 @@ public class TowerCombiner : MonoBehaviour
             {
                 for (int j = i + 1; j < towers.Count; j++)
                 {
+                    if (towers[i] == null || towers[j] == null)
+                    {
+                        continue;
+                    }
+
                     if (towers[i].GetComponent<Collider>().bounds.Intersects(towers[j].GetComponent<Collider>().bounds))
                     {
                         collidedTowers[i] = true;
@@ -164,6 +192,11 @@ public class TowerCombiner : MonoBehaviour
 
         for (int i = 0; i < towers.Count; i++)
         {
+            if (towers[i] == null)
+            {
+                continue;
+            }
+
             centerPosition += towers[i].transform.position * towers[i].Weight;
             totalWeight += towers[i].Weight;
         }
@@ -197,6 +230,6 @@ public class TowerCombiner : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawSphere(centerCombinedTowers, 0.6f);
+        Gizmos.DrawSphere(centerCombinedTowers, 0.1f);
     }
 }

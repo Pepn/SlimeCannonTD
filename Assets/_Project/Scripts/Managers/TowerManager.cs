@@ -6,10 +6,10 @@ using UnityEngine;
 public class TowerManager : Singleton<TowerManager>
 {
     [SerializeField, Required, FoldoutGroup("References")] private Transform towerParent;
-
     /// <summary>
     /// Gets the List of all the towers in this level.
     /// </summary>
+    [field: SerializeField, ReadOnly, FoldoutGroup("Debug")]
     public List<BaseTower> Towers { get; private set; } = new List<BaseTower>();
 
     /// <summary>
@@ -22,11 +22,13 @@ public class TowerManager : Singleton<TowerManager>
         Destroy(tower.gameObject);
     }
 
-    public BasicTower CreateTower(GameObject towerPrefab, Vector3 pos)
+    public BasicTower CreateTower(GameObject towerPrefab, Vector3 pos, float weight = 1.0f)
     {
         BasicTower tower = Instantiate(towerPrefab, towerParent).GetComponent<BasicTower>();
-        tower.transform.position = pos;
-        tower.transform.localRotation = Quaternion.Euler(0,0,0);
+        tower.Weight = weight;
+        tower.SetTowerSize();
+        tower.transform.position = new Vector3(pos.x, pos.y, 0) - new Vector3(0, 0, towerPrefab.GetComponent<BoxCollider>().size.z * 0.5f);
+        tower.transform.localRotation = Quaternion.Euler(0, 0, 0);
         Towers.Add(tower);
         return tower;
     }

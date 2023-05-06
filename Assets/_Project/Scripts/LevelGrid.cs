@@ -6,6 +6,7 @@ using Sirenix.OdinInspector;
 using System.Linq;
 using Sirenix.Utilities;
 using System;
+using UnityEditor;
 
 [ExecuteAlways]
 public class LevelGrid : MonoBehaviour
@@ -19,18 +20,25 @@ public class LevelGrid : MonoBehaviour
 
     public Action OnGridChanged;
 
+    /// <summary>
+    /// Whether the LevelGrid conatiner should be updated due to some change in the level.
+    /// </summary>
+    public bool IsGridDirty { get; set; }
+
     void OnEnable()
     {
         InitGrid();
-        OnGridChanged += UpdateGrid;
     }
 
-    private void OnDisable()
+    private void Update()
     {
-        OnGridChanged -= UpdateGrid;
+        if (IsGridDirty)
+        {
+            UpdateGrid();
+            IsGridDirty = false;
+        }
     }
-
-    void InitGrid()
+    private void InitGrid()
     {
         CreateGridOnObject(FloorPlane);
         cells = new int[numCells.x, numCells.y];
@@ -46,6 +54,11 @@ public class LevelGrid : MonoBehaviour
 
     private void UpdateGrid()
     {
+        //directly after placing and moving tower the physics object does not move in the same frame, manually pushing physics simulation fixs this
+        Physics.autoSimulation = false;
+        Physics.Simulate(Time.fixedDeltaTime);
+        Physics.autoSimulation = true;
+
         Bounds bounds = FloorPlane.GetComponent<Renderer>().bounds;
         for (int i = 0; i < numCells.x; i++)
         {
@@ -53,16 +66,17 @@ public class LevelGrid : MonoBehaviour
             {
                 Ray ray = new Ray(new Vector3(i*cellSize.x, j*cellSize.y, -5.0f) - bounds.extents + cellSize/2, new Vector3(0, 0, 10));
                 RaycastHit hitInfo;
-                //Debug.DrawRay(ray.origin, ray.direction*100);
+
                 if (Physics.Raycast(ray, out hitInfo) && hitInfo.collider.tag == "Tower")
                 {
                     if (cells[i, j] == 0)
                     {
+                        Debug.DrawRay(ray.origin, ray.direction * 100);
                         cells[i, j] = hitInfo.collider.gameObject.GetComponent<BasicTower>().Id;
                     }
                     else //its impossible to have a single value array value store multiple towers so just pick one of the towers at random
                     {
-                        if(UnityEngine.Random.value > 0.5f)
+                        if (UnityEngine.Random.value > 0.5f)
                         {
                             cells[i, j] = hitInfo.collider.gameObject.GetComponent<BasicTower>().Id;
                         }
@@ -154,9 +168,15 @@ public class LevelGrid : MonoBehaviour
 
                 if (searchPixel != 0 && templatePixel)
                 {
-                    Debug.Log($"ADDING TOWER with id: {searchPixel}");
-                    towers.Add(TowerManager.Instance.GetTower(searchPixel));
-                    matches++;
+                    if (TowerManager.Instance.GetTower(searchPixel) == null)
+                    {
+                        Debug.LogWarning("Get Tower is NULL");
+                    }
+                    else
+                    {
+                        matches++;
+                        towers.Add(TowerManager.Instance.GetTower(searchPixel));
+                    }
                 }
 
                 if (templatePixel)
@@ -170,9 +190,7 @@ public class LevelGrid : MonoBehaviour
             }
         }
 
-        
         TargetHitInfo hitInfo = new TargetHitInfo(TotalCellsTargeted(), matches, towers.Distinct().ToList());
-        OnGridChanged?.Invoke();
         //Debug.Log($"Looking from {pos.x},{pos.y} to {pos.x + template.GetLength(0)}, {pos.y + template.GetLength(1)} searching in {TotalCellsTargeted()} cells." );
         return hitInfo;
     }
@@ -215,7 +233,8 @@ public class LevelGrid : MonoBehaviour
             {
                 if (cells[i, j] != 0)
                 {
-                    Gizmos.DrawSphere((new Vector3(i, j, 0) * cellSize.x) - bounds.extents + (cellSize * 0.5f), 0.1f);
+                    Vector3 cellPos = (new Vector3(i, j, 0) * cellSize.x) - bounds.extents + (cellSize * 0.5f);
+                    Handles.Label(cellPos, cells[i,j].ToString());
                 }
             }
         }
