@@ -10,20 +10,23 @@ namespace PT
     public static class Utilities
     {
         /// <summary>
-        /// Deletes all child gameobjects of Transform t.
+        /// Deletes all child gameobjects of Transform t, works both for in ExecuteMode and during runtime.
         /// </summary>
         /// <param name="t">The transform.</param>
         public static void DestroyChildren(this Transform t)
         {
-            for (int i = 0; i < t.childCount; ++i)
+            if (Application.isPlaying)
             {
-                if (Application.isPlaying)
+                for (int i = 0; i < t.childCount; ++i)
                 {
                     Object.Destroy(t.GetChild(i).gameObject);
                 }
-                else
+            }
+            else
+            {
+                for (int i = t.childCount; i > 0; --i)
                 {
-                    Object.DestroyImmediate(t.GetChild(i).gameObject);
+                    Object.DestroyImmediate(t.GetChild(0).gameObject);
                 }
             }
         }
