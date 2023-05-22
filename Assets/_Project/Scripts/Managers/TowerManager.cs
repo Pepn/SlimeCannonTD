@@ -1,4 +1,5 @@
 using Sirenix.OdinInspector;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,6 +13,8 @@ public class TowerManager : Singleton<TowerManager>
     [field: SerializeField, ReadOnly, FoldoutGroup("Debug")]
     public List<BaseTower> Towers { get; private set; } = new List<BaseTower>();
 
+    public Action<BaseTower> OnRemoveTower;
+
     /// <summary>
     /// Removes the Tower from the TowerManager and the destroy the gameobject.
     /// </summary>
@@ -19,6 +22,7 @@ public class TowerManager : Singleton<TowerManager>
     public void RemoveTower(BaseTower tower)
     {
         Towers.Remove(tower);
+        OnRemoveTower?.Invoke(tower);
         Destroy(tower.gameObject);
     }
 
@@ -29,6 +33,7 @@ public class TowerManager : Singleton<TowerManager>
         tower.SetTowerSize();
         tower.transform.position = new Vector3(pos.x, pos.y, 0) - new Vector3(0, 0, towerPrefab.GetComponent<BoxCollider>().size.z * 0.5f);
         tower.transform.localRotation = Quaternion.Euler(0, 0, 0);
+        tower.PlaySpawnAnimation();
         Towers.Add(tower);
         return tower;
     }

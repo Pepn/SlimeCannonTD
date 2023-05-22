@@ -7,6 +7,7 @@ using System.Linq;
 using Sirenix.Utilities;
 using System;
 using UnityEditor;
+using Unity.Jobs;
 
 [ExecuteAlways]
 public class LevelGrid : MonoBehaviour
@@ -19,15 +20,22 @@ public class LevelGrid : MonoBehaviour
     [field: SerializeField] public GameObject FloorPlane { get; private set; }
 
     public Action OnGridChanged;
+    private List<int> towersReadyForCleanup = new List<int>();
 
     /// <summary>
     /// Whether the LevelGrid conatiner should be updated due to some change in the level.
     /// </summary>
     public bool IsGridDirty { get; set; }
 
-    void OnEnable()
+    private void OnEnable()
     {
         InitGrid();
+        TowerManager.Instance.OnRemoveTower += AddTowerIdsToClear;
+    }
+
+    private void OnDisable()
+    {
+        TowerManager.Instance.OnRemoveTower -= AddTowerIdsToClear;
     }
 
     private void Update()
@@ -38,6 +46,7 @@ public class LevelGrid : MonoBehaviour
             IsGridDirty = false;
         }
     }
+
     private void InitGrid()
     {
         CreateGridOnObject(FloorPlane);
@@ -52,12 +61,68 @@ public class LevelGrid : MonoBehaviour
         cellSize = new Vector3(gridSize.x / numCells.x, gridSize.y / numCells.y, 0);
     }
 
+    private void AddTowerIdsToClear(BaseTower tower)
+    {
+        towersReadyForCleanup.Add(tower.Id);
+    }
+
+    /// <summary>
+    /// After deletion or upgrade make sure to reset all the grid cells to 0.
+    /// </summary>
+    /// <param name="id">The tower Id to clear.</param>
+    private void ClearTowerIdFromGrid()
+    {
+        for (int i = 0; i < numCells.x; i++)
+        {
+            for (int j = 0; j < numCells.y; j++)
+            {
+                foreach (int id in towersReadyForCleanup)
+                {
+                    if (cells[i, j] == id)
+                    {
+                        cells[i, j] = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    public struct UpdateGridJob : IJobParallelFor {
+        public int[,] cells;
+
+        public void Execute(int index)
+        {
+            cells[index / cells.GetLength(0), index % cells.GetLength(1)] = index;
+        }
+    }
+
+    //// A system that schedules the IJobParallelFor.
+    //public partial struct MySystem : ISystem
+    //{
+    //    [BurstCompile]
+    //    public void OnUpdate(ref SystemState state)
+    //    {
+    //        var job = new IncrementParallelJob
+    //        {
+    //            Nums = new NativeArray<float>(1000, state.WorldUpdateAllocator),
+    //            Increment = 5f
+    //        };
+    //
+    //        JobHandle handle = job.Schedule(
+    //            job.Nums.Length,          // number of times to call Execute
+    //            64);     // split the calls into batches of 64
+    //        handle.Complete();
+    //    }
+    //}
+
     private void UpdateGrid()
     {
         //directly after placing and moving tower the physics object does not move in the same frame, manually pushing physics simulation fixs this
         Physics.autoSimulation = false;
         Physics.Simulate(Time.fixedDeltaTime);
         Physics.autoSimulation = true;
+
+        ClearTowerIdFromGrid();
 
         Bounds bounds = FloorPlane.GetComponent<Renderer>().bounds;
         for (int i = 0; i < numCells.x; i++)
