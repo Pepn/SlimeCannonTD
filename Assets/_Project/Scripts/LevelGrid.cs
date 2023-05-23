@@ -1,13 +1,17 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Sirenix.OdinInspector;
+using Sirenix.Utilities;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Entities;
+using Unity.Jobs;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Sirenix.OdinInspector;
-using System.Linq;
-using Sirenix.Utilities;
-using System;
-using UnityEditor;
-using Unity.Jobs;
+using ReadOnlyAttribute = Sirenix.OdinInspector.ReadOnlyAttribute;
 
 [ExecuteAlways]
 public class LevelGrid : MonoBehaviour
@@ -21,6 +25,8 @@ public class LevelGrid : MonoBehaviour
 
     public Action OnGridChanged;
     private List<int> towersReadyForCleanup = new List<int>();
+
+    MySystem gridJobs;
 
     /// <summary>
     /// Whether the LevelGrid conatiner should be updated due to some change in the level.
@@ -52,6 +58,9 @@ public class LevelGrid : MonoBehaviour
         CreateGridOnObject(FloorPlane);
         cells = new int[numCells.x, numCells.y];
         debugTowers = new bool[numCells.x, numCells.y];
+
+        gridJobs = new MySystem();
+        gridJobs.GetGrid(cells);
     }
 
     private void CreateGridOnObject(GameObject obj)
@@ -88,32 +97,53 @@ public class LevelGrid : MonoBehaviour
     }
 
     public struct UpdateGridJob : IJobParallelFor {
-        public int[,] cells;
 
+        public NativeArray<int> Grid;
         public void Execute(int index)
         {
-            cells[index / cells.GetLength(0), index % cells.GetLength(1)] = index;
+            Grid[index] = index;
         }
     }
 
-    //// A system that schedules the IJobParallelFor.
-    //public partial struct MySystem : ISystem
-    //{
-    //    [BurstCompile]
-    //    public void OnUpdate(ref SystemState state)
-    //    {
-    //        var job = new IncrementParallelJob
-    //        {
-    //            Nums = new NativeArray<float>(1000, state.WorldUpdateAllocator),
-    //            Increment = 5f
-    //        };
-    //
-    //        JobHandle handle = job.Schedule(
-    //            job.Nums.Length,          // number of times to call Execute
-    //            64);     // split the calls into batches of 64
-    //        handle.Complete();
-    //    }
-    //}
+    // A system that schedules the IJobParallelFor.
+    public partial struct MySystem : ISystem
+    {
+        NativeArray<int> grid;
+        public NativeArray<int> GetGrid(int[,] cells)
+        {
+            Debug.Log($"Gettin grid from cells {cells.GetLength(0)}");
+            int index = 0;
+            grid = new NativeArray<int>(cells.GetLength(0) * cells.GetLength(1), Allocator.Persistent);
+            for (int i = 0; i < cells.GetLength(0); i++)
+            {
+                for (int j = 0; j < cells.GetLength(1); j++)
+                {
+                    grid[index] = cells[i, j]; // Assign values from 2D to 1D array
+                    index++;
+                }
+            }
+
+            return grid;
+        }
+
+        [BurstCompile]
+        public void OnUpdate(ref SystemState state)
+        {
+            var job = new UpdateGridJob
+            {
+                Grid = grid,
+            };
+            Debug.Log(grid.Length.ToString());
+    
+            JobHandle handle = job.Schedule(
+                job.Grid.Length,          // number of times to call Execute
+                64);     // split the calls into batches of 64
+
+
+            handle.Complete();
+            Debug.Log(job.Grid[0].ToString());
+        }
+    }
 
     private void UpdateGrid()
     {
