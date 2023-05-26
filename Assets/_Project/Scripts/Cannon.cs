@@ -83,7 +83,9 @@ public class Cannon : MonoBehaviour
 
     private void PlaceTower()
     {
-        TowerManager.Instance.CreateTower(towerPrefab, PlaneHitPoint(), 1.0f);
+        Vector3 targetPoint = PlaneHitPoint();
+        TowerManager.Instance.CreateTower(towerPrefab, targetPoint, 1.0f);
+        Vector2Int targetedGridCellCenter = levelGrid.PlaneHitPointToGridIndex(targetPoint, levelGrid.FloorPlane);
     }
 
     private Vector3 PlaneHitPoint()

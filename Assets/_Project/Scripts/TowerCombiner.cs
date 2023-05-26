@@ -86,7 +86,6 @@ public class TowerCombiner : MonoBehaviour
         TargetHitInfo hitInfo = grid.TemplateMatchPosition(template, grid.cells, pos);
         Debug.Log(hitInfo.ToString());
 
-
         StartCoroutine(TowerCombineTransformTowers(hitInfo));
     }
 

@@ -5,14 +5,9 @@ using System.Linq;
 using DG.Tweening.Core.Easing;
 using Sirenix.OdinInspector;
 using Sirenix.Utilities;
-using Unity.Burst;
 using Unity.Collections;
-using Unity.Entities;
-using Unity.Jobs;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.UIElements;
 using ReadOnlyAttribute = Sirenix.OdinInspector.ReadOnlyAttribute;
 
 public class LevelGrid : MonoBehaviour
@@ -48,50 +43,9 @@ public class LevelGrid : MonoBehaviour
     {
         if (IsGridDirty)
         {
-            //UpdateGrid();
+            UpdateGrid(0,0, numCells.x, numCells.y);
             IsGridDirty = false;
         }
-
-        int objectCount = 1023;
-
-        // Create temporary arrays for the raycast info. Lets use the TempJob allocator,
-        // this means we have to dispose them when the job has finished - its short lived data
-        var raycastCommands = new NativeArray<RaycastCommand>(objectCount, Allocator.TempJob);
-        var raycastHits = new NativeArray<RaycastHit>(objectCount, Allocator.TempJob);
-
-        // Lets schedule jobs to do a collision raycast for each object. One job Prepare    s all the raycast commands,
-        // the second actually does the raycasts.
-        var setupRaycastsJob = new PrepareRaycasts
-        {
-            Raycasts = raycastCommands,
-            Grid = GetGrid(cells),
-            cellSize = cellSize,
-            boundsExtents = FloorPlane.GetComponent<Renderer>().bounds.extents,
-        };
-
-        var setupDependency = setupRaycastsJob.Schedule(objectCount, 32);
-
-        var raycastDependency = RaycastCommand.ScheduleBatch(raycastCommands, raycastHits, 32, setupDependency);
-
-        var UpdateGridJob = new UpdateGridParralel
-        {
-            Grid = GetGrid(cells),
-            Hits = raycastHits,
-        };
-
-        var updateGridDependency = UpdateGridJob.Schedule(objectCount, 32, raycastDependency);
-
-
-        // All the jobs we want to execute have been scheduled! By calling .Complete() on the last job in the
-        // chain, Unity makes the main thread help out with scheduled jobs untill they are all complete. 
-        // then we can move on and use the data caluclated in the jobs safely, without worry about data being changed
-        // by other threads as we try to use it - we *know* all the work is done
-        //https://github.com/LotteMakesStuff/SimplePhysicsDemo/blob/master/Assets/SimpleJobifiedPhysics.cs
-        updateGridDependency.Complete();
-
-        //dispose temp arrays
-        raycastCommands.Dispose();
-        raycastHits.Dispose();
     }
 
     private void InitGrid()
@@ -100,6 +54,34 @@ public class LevelGrid : MonoBehaviour
         cells = new int[numCells.x, numCells.y];
         debugTowers = new bool[numCells.x, numCells.y];
         _boundsExtents = FloorPlane.GetComponent<Renderer>().bounds.extents;
+    }
+
+    public Vector2Int PlaneHitPointToGridIndex(Vector3 hitPoint, GameObject floorPlane)
+    {
+        Vector3 planeSize = floorPlane.GetComponent<Collider>().bounds.size;
+        Debug.Log($"planeSize {planeSize}");
+        float cellWidth = planeSize.x / numCells.x;
+        float cellHeight = planeSize.y / numCells.y;
+
+        // Calculate the offset of the plane's center
+        float offsetX = planeSize.x / 2f;
+        float offsetY = planeSize.y / 2f;
+
+        // Calculate the grid cell indices
+        int cellX = Mathf.FloorToInt((hitPoint.x - floorPlane.transform.position.x + offsetX) / cellWidth);
+        int cellY = Mathf.FloorToInt((hitPoint.y - floorPlane.transform.position.y + offsetY) / cellHeight);
+
+        // Ensure the cell indices are within the valid range
+        cellX = Mathf.Clamp(cellX, 0, 9);
+        cellY = Mathf.Clamp(cellY, 0, 9);
+
+        // The grid cell indices
+        int gridCellX = cellX;
+        int gridCellY = cellY;
+
+        Debug.Log($"{gridCellX} {gridCellY}");
+
+        return new Vector2Int(gridCellX, gridCellY);
     }
 
     private void CreateGridOnObject(GameObject obj)
@@ -135,72 +117,7 @@ public class LevelGrid : MonoBehaviour
         }
     }
 
-    public struct PrepareRaycasts : IJobParallelFor {
-
-        public NativeArray<int> Grid;
-        [Unity.Collections.ReadOnly] public Vector3 cellSize;
-        [Unity.Collections.ReadOnly] public Vector3 boundsExtents;
-        public NativeArray<RaycastCommand> Raycasts;
-
-        public void Execute(int index)
-        {
-            Grid[index] = index;
-
-            Raycasts[index] = new RaycastCommand(new Vector3(index / cellSize.x, index % cellSize.y, -5.0f) - boundsExtents + (cellSize * 0.5f), new Vector3(0, 0, 10), QueryParameters.Default);
-        }
-    }
-
-    // Integrate the velocity into all the objects positions. We use the
-    // Raycast hit data to decide how much of the velocity to integrate -
-    // we dont want to tunnel though the colliders in the scene!
-    struct UpdateGridParralel : IJobParallelFor
-    {
-
-        public NativeArray<int> Grid;
-        [ReadOnly]
-        public NativeArray<RaycastHit> Hits;
-
-        public void Execute(int index)
-        {
-            if (Hits[index].normal != Vector3.zero)//.collider.tag == "Tower")
-            {
-                if (Grid[index] == 0)
-                {
-                    Grid[index] = Hits[index].collider.gameObject.GetComponent<BasicTower>().Id;
-                }
-                else //its impossible to have a single value array value store multiple towers so just pick one of the towers at random
-                {
-                    if (UnityEngine.Random.value > 0.5f)
-                    {
-                        Grid[index] = Hits[index].collider.gameObject.GetComponent<BasicTower>().Id;
-                    }
-                }
-            }
-            else
-            {
-                Grid[index] = 0;
-            }
-        }
-    }
-
-    public NativeArray<int> GetGrid(int[,] cells)
-    {
-        Debug.Log($"Gettin grid from cells {cells.GetLength(0)}");
-        int index = 0;
-        NativeArray<int> grid = new NativeArray<int>(cells.GetLength(0) * cells.GetLength(1), Allocator.Persistent);
-        for (int i = 0; i < cells.GetLength(0); i++)
-        {
-            for (int j = 0; j < cells.GetLength(1); j++)
-            {
-                grid[index] = cells[i, j]; // Assign values from 2D to 1D array
-                index++;
-            }
-        }
-
-        return grid;
-    }
-
-    private void UpdateGrid()
+    private void UpdateGrid(int x, int y, int width, int height)
     {
         //directly after placing and moving tower the physics object does not move in the same frame, manually pushing physics simulation fixs this
         Physics.autoSimulation = false;
@@ -210,9 +127,9 @@ public class LevelGrid : MonoBehaviour
         ClearTowerIdFromGrid();
 
         Bounds bounds = FloorPlane.GetComponent<Renderer>().bounds;
-        for (int i = 0; i < numCells.x; i++)
+        for (int i = x; i < x + width; i++)
         {
-            for (int j = 0; j < numCells.y; j++)
+            for (int j = y; j < y + height; j++)
             {
                 Ray ray = new Ray(new Vector3(i*cellSize.x, j*cellSize.y, -5.0f) - bounds.extents + cellSize/2, new Vector3(0, 0, 10));
                 RaycastHit hitInfo;
