@@ -12,57 +12,61 @@ public class Enemy : MonoBehaviour
     [field: SerializeField] public float MaxHealth { get; private set; }
     [field: SerializeField] public float Health { get; private set; }
     [field: SerializeField] public float Speed { get; private set; }
-    private Collider goalCollider;
+
     private int damage = 10;
     [SerializeField] private Material deathMaterial;
 
     private NavMeshAgent navMeshAgent;
 
-    private Renderer renderer;
+    private Renderer modelRenderer;
 
     public event Action OnDeath;
-
+    private bool _isDieing = false;
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         Health = MaxHealth;
         navMeshAgent = GetComponent<NavMeshAgent>();
         navMeshAgent.speed = Speed;
-        goalCollider = GameManager.Instance.World.EnemyGoal.GetComponent<BoxCollider>();
-        navMeshAgent.SetDestination(goalCollider.transform.position);
-        renderer = GetComponent<Renderer>();
+        navMeshAgent.SetDestination(GameManager.Instance.World.EnemyMovemementTarget.position);
+        modelRenderer = GetComponent<Renderer>();
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if(Health <= 0)
+        if (Health <= 0)
         {
             Die(1.0f);
         }
-        
     }
 
     //Detect collisions between the GameObjects with Colliders attached
-    void OnTriggerEnter(Collider collider)
+    private void OnTriggerEnter(Collider collider)
     {
         //Check for a match with the specified name on any GameObject that collides with your GameObject
-        if (collider.gameObject.name == "EnemyGoal")
+        if (collider.gameObject.name == "MainCannon")
         {
             //If the GameObject's name matches the one you suggest, output this message in the console
             GameManager.Instance.IncreaseHealth(-damage);
             Die(1.0f);
         }
-        
     }
 
     private void Die(float deathAnimationTime)
     {
-        renderer.material = deathMaterial;
-        DOTween.To(() => navMeshAgent.speed, x => navMeshAgent.speed = x, 0, deathAnimationTime);
-        DOTween.To(() => renderer.material.GetFloat("_DissolveAmount"), x => renderer.material.SetFloat("_DissolveAmount", x), 1, deathAnimationTime);
+        if (_isDieing)
+        {
+            return;
+        }
+
+        _isDieing = true;
+        modelRenderer.material = deathMaterial;
+        DG.Tweening.Sequence sequence = DOTween.Sequence();
+        sequence.Append(DOTween.To(() => navMeshAgent.speed, x => navMeshAgent.speed = x, 0, deathAnimationTime)).
+                 AppendCallback(() => Destroy(this.gameObject));
+        DOTween.To(() => modelRenderer.material.GetFloat("_DissolveAmount"), x => modelRenderer.material.SetFloat("_DissolveAmount", x), 1, deathAnimationTime);
 
         OnDeath?.Invoke();
-        Destroy(this.gameObject, deathAnimationTime);
     }
 }

@@ -5,30 +5,26 @@ using UnityEngine;
 
 public class EnemyManager : Singleton<EnemyManager>
 {
-    [SerializeField] private List<Enemy> enemies;
-    public ReadOnlyCollection<Enemy> Enemies { get; private set; }
-    // Start is called before the first frame update
+    [field: SerializeField] public List<Enemy> Enemies { get; private set; }
+
     void Start()
     {
-        enemies = new List<Enemy>();
-        Enemies = enemies.AsReadOnly();
+        Enemies = new List<Enemy>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        //Debug.Log(enemies);
     }
 
     public void AddEnemy(Enemy e)
     {
-        enemies.Add(e);
+        Enemies.Add(e);
         e.OnDeath += delegate { RemoveEnemy(e);};
     }
 
     private void RemoveEnemy(Enemy e)
     {
-        Debug.Log("Removing Enemy from List.");
-        enemies.Remove(e);
+        Enemies.Remove(e);
     }
 }

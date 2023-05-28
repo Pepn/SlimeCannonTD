@@ -1,23 +1,20 @@
-﻿using Sirenix.OdinInspector;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class World : MonoBehaviour
 {
-    [SerializeField] private EnemyGoal enemyGoal;
+    [SerializeField] private Transform enemyMovemementTarget;
     [SerializeField] private EnemySpawn enemySpawn;
 
     [field: SerializeField, Required, ChildGameObjectsOnly] public GameObject Floor { get; private set; }
-    public EnemyGoal EnemyGoal
+    public Transform EnemyMovemementTarget
     {
-        get => enemyGoal;
-        private set { }
+        get => enemyMovemementTarget;
     }
+
     public EnemySpawn EnemySpawn{
         get => enemySpawn;
-        private set { }
     }
 
     // Start is called before the first frame update

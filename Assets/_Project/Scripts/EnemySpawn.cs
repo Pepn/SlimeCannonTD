@@ -28,7 +28,6 @@ public class EnemySpawn : MonoBehaviour
 
     private void SpawnEnemy()
     {
-        Debug.Log("spawn");
         GameObject enemy = Instantiate(enemyPrefab) as GameObject;
         enemy.transform.localScale = new Vector3(1, 1, 1);
         enemy.transform.position = this.transform.position + new Vector3(0,0,0.5f);
