@@ -1,4 +1,6 @@
 using Sirenix.OdinInspector;
+using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -43,19 +45,22 @@ public class Cannon : MonoBehaviour
     {
         aimTarget.transform.position = currentAim;
         TimeStep();
+
         if (Keyboard.current.spaceKey.wasPressedThisFrame)
         {
-            if (!selectedX)
+            if (!selectedX && (currentDirection == Direction.Left || currentDirection == Direction.Right))
             {
-                currentDirection = Direction.Right;
+                currentDirection = RandomUpOrDown;
                 selectedX = true;
                 return;
             }
-            else
-            {
-                selectedY = true;
-            }
 
+            if (!selectedY && (currentDirection == Direction.Up || currentDirection == Direction.Down))
+            {
+                currentDirection = RandomLeftOrRight;
+                selectedY = true;
+                return;
+            }
         }
 
         if (selectedX && selectedY)
@@ -100,8 +105,13 @@ public class Cannon : MonoBehaviour
         currentAim = startPosition;
         selectedX = false;
         selectedY = false;
-        currentDirection = Direction.Up;
+        currentDirection = RandomDirection;
     }
+
+    private Direction RandomDirection => (Direction)UnityEngine.Random.Range(0, 4);
+    private Direction RandomUpOrDown => (Direction)UnityEngine.Random.Range(0, 2);
+    private Direction RandomLeftOrRight => (Direction)UnityEngine.Random.Range(2, 4);
+
 
     private void OnDrawGizmos()
     {
