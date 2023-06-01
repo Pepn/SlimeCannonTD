@@ -39,6 +39,7 @@ public class Cannon : MonoBehaviour
         selectionBounds = inputArea.GetComponent<BoxCollider>().bounds;
         startPosition = transform.position;
         ResetSelection();
+        UpdateTargetDisplay();
     }
 
     private void Update()
@@ -69,10 +70,10 @@ public class Cannon : MonoBehaviour
         }
     }
 
+
     private void ShootCannon()
     {
-        shootCounter++;
-        if (shootCounter % combinerInterval == 0)
+        if (shootCounter % combinerInterval == combinerInterval - 1)
         {
             Debug.Log("Combining Towers..");
             towerCombiner.TestTowerCombineAtTarget();
@@ -82,8 +83,43 @@ public class Cannon : MonoBehaviour
             PlaceTower();
         }
 
+        shootCounter++;
+        UpdateTargetDisplay();
         levelGrid.IsGridDirty = true;
         ResetSelection();
+    }
+
+    // Change cannon shooting to rotate around its origin
+    // hold to increase firepower, on start hold stop the rotation (or not!?)
+    // the bullets you get have random size (weight) the heavier the more power you need to shoot the same distancet
+    // show the next bullet you shoot with its weight, weight is defined by the towertype & upgrade level
+
+    // remove combiner shot into a special slime that does this massive fx and strenght based on the accuracy of the shot ! (dopamine hit)
+
+    // add different bullets the player can choose to add to their deck
+    // fire, money, attackspeed, default other cool towers that have bonuses if you shoot them in special arrangements
+
+    // tower cards aka the deck you build either you build the deck during each run (roguelike)
+    // OR you build the deck in the main menu (mobile game)
+
+    // meta game tower attachments
+    // remove scope -> remove vfx that indicate your shot, gain extra speed/strength/tower strength
+    // remove angle -> remove vfx that indicat your shot, gain extra smth
+    // increase shooting power
+    // increase attack speed
+    // increase default size
+    // increase health
+
+    private void UpdateTargetDisplay()
+    {
+        if(shootCounter % combinerInterval == combinerInterval - 1)
+        {
+            towerCombiner.SetTarget(towerCombiner.GetCombineTarget);
+        }
+        else
+        {
+            towerCombiner.SetTarget(towerCombiner.GetTowerTarget);
+        }
     }
 
     private void PlaceTower()

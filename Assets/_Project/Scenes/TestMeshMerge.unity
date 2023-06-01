@@ -494,7 +494,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 41226103}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Base
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4582,6 +4582,7 @@ MonoBehaviour:
   _targetSpawnArea: {fileID: 1169261862}
   targets:
   - {fileID: 11400000, guid: 97d28207de0031442bd21ab90429f296, type: 2}
+  - {fileID: 11400000, guid: 096c0bf12be4e94468924c19531d090b, type: 2}
   centerCombinedTowers: {x: 0, y: 0, z: 0}
   currentTarget: {fileID: 11400000, guid: 97d28207de0031442bd21ab90429f296, type: 2}
 --- !u!114 &829132649
@@ -5219,7 +5220,7 @@ GameObject:
   - component: {fileID: 888609543}
   - component: {fileID: 888609542}
   - component: {fileID: 888609541}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Base
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7038,7 +7039,7 @@ MonoBehaviour:
   m_Center: {x: 0, y: 2, z: 0}
   m_LayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 247
   m_UseGeometry: 0
   m_DefaultArea: 0
   m_GenerateLinks: 0
@@ -11990,7 +11991,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1872689952}
   - component: {fileID: 1872689953}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: MainCannon
   m_TagString: MainCannon
   m_Icon: {fileID: 0}
@@ -12008,7 +12009,7 @@ GameObject:
   - component: {fileID: 1872750270}
   - component: {fileID: 1873533102}
   - component: {fileID: 1874646400}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: rotater
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -12026,7 +12027,7 @@ GameObject:
   - component: {fileID: 1872670062}
   - component: {fileID: 1873542750}
   - component: {fileID: 1874570218}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: floor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -12044,7 +12045,7 @@ GameObject:
   - component: {fileID: 1872748256}
   - component: {fileID: 1873500344}
   - component: {fileID: 1874650936}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: cannon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -12062,7 +12063,7 @@ GameObject:
   - component: {fileID: 1872625946}
   - component: {fileID: 1873428646}
   - component: {fileID: 1874544922}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: flag_back
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -28,8 +28,15 @@ public class TowerCombiner : MonoBehaviour
 
     private void Update()
     {
-        //10x10 is size 1
-        currentTarget = targets[0];
+        
+    }
+
+    public TargetInfoSO GetCombineTarget => targets[0];
+    public TargetInfoSO GetTowerTarget => targets[1];
+
+    public void SetTarget(TargetInfoSO target)
+    {
+        currentTarget = target;
         targetProjector.size = new Vector3(currentTarget.Size.x * 0.1f, currentTarget.Size.y * 0.1f, targetProjector.size.z);
         targetProjector.material = currentTarget.TargetImage;
         combineTarget = (Texture2D)currentTarget.TargetImage.GetTexture("Base_Map");

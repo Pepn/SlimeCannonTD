@@ -25,11 +25,16 @@ public class Enemy : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        Health = MaxHealth;
         navMeshAgent = GetComponent<NavMeshAgent>();
         navMeshAgent.speed = Speed;
         navMeshAgent.SetDestination(GameManager.Instance.World.EnemyMovemementTarget.position);
         modelRenderer = GetComponent<Renderer>();
+    }
+
+    public void Init(float maxHealth)
+    {
+        MaxHealth = maxHealth;
+        Health = MaxHealth;
     }
 
     // Update is called once per frame
@@ -40,6 +45,8 @@ public class Enemy : MonoBehaviour
             Die(1.0f);
         }
     }
+
+    public void ChangeHealth(float damage) => Health += damage;
 
     //Detect collisions between the GameObjects with Colliders attached
     private void OnTriggerEnter(Collider collider)

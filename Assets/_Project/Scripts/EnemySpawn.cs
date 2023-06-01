@@ -23,7 +23,6 @@ public class EnemySpawn : MonoBehaviour
             spawnTimer = 0;
             SpawnEnemy();
         }
-        
     }
 
     private void SpawnEnemy()
@@ -32,7 +31,7 @@ public class EnemySpawn : MonoBehaviour
         enemy.transform.localScale = new Vector3(1, 1, 1);
         enemy.transform.position = this.transform.position + new Vector3(0,0,0.5f);
         enemy.transform.SetParent(this.transform);
-
+        enemy.GetComponent<Enemy>().Init(EnemyManager.Instance.CurrentMaxHealth());
         GameManager.EnemyManager.AddEnemy(enemy.GetComponent<Enemy>());
     }
 

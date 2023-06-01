@@ -59,7 +59,6 @@ public class LevelGrid : MonoBehaviour
     public Vector2Int PlaneHitPointToGridIndex(Vector3 hitPoint, GameObject floorPlane)
     {
         Vector3 planeSize = floorPlane.GetComponent<Collider>().bounds.size;
-        Debug.Log($"planeSize {planeSize}");
         float cellWidth = planeSize.x / numCells.x;
         float cellHeight = planeSize.y / numCells.y;
 
@@ -79,7 +78,7 @@ public class LevelGrid : MonoBehaviour
         int gridCellX = cellX;
         int gridCellY = cellY;
 
-        Debug.Log($"{gridCellX} {gridCellY}");
+        //Debug.Log($"{gridCellX} {gridCellY}");
 
         return new Vector2Int(gridCellX, gridCellY);
     }
@@ -282,6 +281,10 @@ public class LevelGrid : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         // Draws a blue line from this transform to the target
+        // execute in editor should be turned on for this to work.
+        if (!Application.IsPlaying(this))
+            return;
+
         Gizmos.color = Color.blue;
         Bounds bounds = FloorPlane.GetComponent<Renderer>().bounds;
         for (int i = 0; i < numCells.x; ++i)

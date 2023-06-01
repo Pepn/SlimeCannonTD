@@ -5,13 +5,9 @@ using UnityEngine;
 public class Bullet : MonoBehaviour
 {
     private Transform target;
+    public float Damage { get; private set; } = 1f;
 
     [SerializeField] private float speed = 70f;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
     public void SetTarget(Transform target) => this.target = target;
 
@@ -40,6 +36,7 @@ public class Bullet : MonoBehaviour
     void HitTarget()
     {
         Debug.Log("HIT ENEMY!");
+        target.GetComponent<Enemy>().ChangeHealth(-Damage);
         Destroy(this.gameObject);
     }
 }
