@@ -16,4 +16,4 @@ MonoBehaviour:
     type: 3}
   <TargetImage>k__BackingField: {fileID: 2100000, guid: 11ed244d05ce5a342a7f761542387bfd,
     type: 2}
-  <Size>k__BackingField: {x: 10, y: 10}
+  <Size>k__BackingField: {x: 20, y: 20}

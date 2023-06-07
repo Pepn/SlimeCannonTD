@@ -4533,7 +4533,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 829132645}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.00000011920929, z: -2.3400002}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4552,7 +4552,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0777d029ed3dffa4692f417d4aba19ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 2100000, guid: 67f8e269bc4e83f42b746553b64531ca, type: 2}
+  m_Material: {fileID: 2100000, guid: 11ed244d05ce5a342a7f761542387bfd, type: 2}
   m_DrawDistance: 100
   m_FadeScale: 0.811
   m_StartAngleFade: 0
@@ -4562,7 +4562,7 @@ MonoBehaviour:
   m_DecalLayerMask: 1
   m_ScaleMode: 0
   m_Offset: {x: 0, y: 0, z: 0}
-  m_Size: {x: 5, y: 5, z: 2}
+  m_Size: {x: 2, y: 2, z: 50}
   m_FadeFactor: 1
 --- !u!114 &829132648
 MonoBehaviour:
@@ -4576,7 +4576,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe08ae7d24eb80240ac97df18d51cad6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  combineTarget: {fileID: 2800000, guid: f9fd2f335364cda41937eab39bf20049, type: 3}
+  combineTarget: {fileID: 2800000, guid: d37dcdee377df0a40b62cff330848d73, type: 3}
   grid: {fileID: 1169261863}
   targetProjector: {fileID: 829132647}
   _targetSpawnArea: {fileID: 1169261862}
@@ -4584,7 +4584,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 97d28207de0031442bd21ab90429f296, type: 2}
   - {fileID: 11400000, guid: 096c0bf12be4e94468924c19531d090b, type: 2}
   centerCombinedTowers: {x: 0, y: 0, z: 0}
-  currentTarget: {fileID: 11400000, guid: 97d28207de0031442bd21ab90429f296, type: 2}
+  currentTarget: {fileID: 11400000, guid: 096c0bf12be4e94468924c19531d090b, type: 2}
 --- !u!114 &829132649
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4602,14 +4602,18 @@ MonoBehaviour:
   inputArea: {fileID: 1169261858}
   selectionBounds:
     m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 5.000001, y: 5, z: 1}
+    m_Extent: {x: 15.000004, y: 15.00001, z: 0.00500179}
   aimTarget: {fileID: 829132645}
   towerCombiner: {fileID: 829132648}
   levelGrid: {fileID: 1169261863}
+  cannonHead: {fileID: 1872750270}
+  cannonMoveSwipe: {fileID: 1872689954}
   combinerInterval: 5
   speed: 6.38
   accuracyRange: 4.65
   reloadTime: 4.02
+  rotationSpeed: 70.9
+  firePowerIncrement: 3.81
 --- !u!1 &830841676
 GameObject:
   m_ObjectHideFlags: 0
@@ -11991,6 +11995,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1872689952}
   - component: {fileID: 1872689953}
+  - component: {fileID: 1872689954}
   m_Layer: 8
   m_Name: MainCannon
   m_TagString: MainCannon
@@ -12108,7 +12113,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1872326786}
   m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 11.05, y: -11.51, z: -1}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -12140,6 +12145,69 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4, y: 4, z: 4}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1872689954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1872326786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88d09d7eb985e884dbd772978b2495a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  position:
+    m_Name: Position
+    m_Type: 0
+    m_ExpectedControlType: Vector2
+    m_Id: feb06b96-d23a-4335-94b9-5c045e5e530f
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: b84d36e1-d840-4abb-87a5-a2cd3af245c5
+      m_Path: <Touchscreen>/position
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Position
+      m_Flags: 0
+    - m_Name: 
+      m_Id: e125a28e-4d7a-44b9-b1a6-83c27a1ba5af
+      m_Path: <Mouse>/position
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Position
+      m_Flags: 0
+    m_Flags: 0
+  press:
+    m_Name: Press
+    m_Type: 1
+    m_ExpectedControlType: Button
+    m_Id: 541bdecc-1274-4d9d-80f1-2bc77fb9ebd4
+    m_Processors: 
+    m_Interactions: Press
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: f49c517c-96e4-4017-9b89-62ee61d0e476
+      m_Path: <Mouse>/press
+      m_Interactions: Press
+      m_Processors: 
+      m_Groups: 
+      m_Action: Press
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 3b9a177e-cef8-4791-bcc8-ff234232db3a
+      m_Path: <Touchscreen>/Press
+      m_Interactions: Press
+      m_Processors: 
+      m_Groups: 
+      m_Action: Press
+      m_Flags: 0
+    m_Flags: 0
+  swipeThreshhold: 10
 --- !u!4 &1872748256
 Transform:
   m_ObjectHideFlags: 0
@@ -12147,14 +12215,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1872421424}
-  m_LocalRotation: {x: -0.78043044, y: 0, z: 0, w: 0.62524265}
+  m_LocalRotation: {x: 1, y: 0, z: 0, w: 0}
   m_LocalPosition: {x: 0, y: 1.9399996, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1872750270}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: -102.6, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 180, y: 0, z: 0}
 --- !u!4 &1872750270
 Transform:
   m_ObjectHideFlags: 0
@@ -12162,7 +12230,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1872372762}
-  m_LocalRotation: {x: 0, y: 0.9659258, z: 0, w: 0.2588191}
+  m_LocalRotation: {x: 0, y: -0.6627447, z: 0, w: 0.74884546}
   m_LocalPosition: {x: 0, y: 2.68, z: 0}
   m_LocalScale: {x: 0.65, y: 0.65, z: 0.65}
   m_ConstrainProportionsScale: 1

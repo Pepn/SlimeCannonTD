@@ -12,11 +12,15 @@ public class Cannon : MonoBehaviour
     [SerializeField, Required, FoldoutGroup("References")] private GameObject aimTarget;
     [SerializeField, Required, FoldoutGroup("References")] private TowerCombiner towerCombiner;
     [SerializeField, Required, FoldoutGroup("References")] private LevelGrid levelGrid;
+    [SerializeField, Required, FoldoutGroup("References")] private Transform cannonHead;
+    [SerializeField, Required, FoldoutGroup("References")] private CannonMoveSwipe cannonMoveSwipe;
 
     [SerializeField, FoldoutGroup("Settings")] private int combinerInterval;
     [SerializeField, FoldoutGroup("Settings"), Range(1, 10)] private float speed;
     [SerializeField, FoldoutGroup("Settings"), Range(1, 10)] private float accuracyRange;
     [SerializeField, FoldoutGroup("Settings"), Range(1, 10)] private float reloadTime;
+    [SerializeField, FoldoutGroup("Settings"), Range(0, 100)] private float rotationSpeed;
+    [SerializeField, FoldoutGroup("Settings"), Range(0, 10)] private float firePowerIncrement;
 
     private Vector3 currentAim;
     private bool selectedX, selectedY;
@@ -24,6 +28,8 @@ public class Cannon : MonoBehaviour
     private Vector3 startPosition;
     private int shootCounter = 0;
 
+    private float aimRotation;
+    private float _accumulatedFirePower = 0;
     private enum Direction
     {
         Up,
@@ -32,6 +38,13 @@ public class Cannon : MonoBehaviour
         Right,
     }
 
+    private enum ShootingState
+    {
+        Rotating,
+        Firing,
+    }
+
+    private ShootingState shootingState = ShootingState.Rotating;
     private Direction currentDirection = Direction.Up;
     private void Start()
     {
@@ -40,38 +53,65 @@ public class Cannon : MonoBehaviour
         startPosition = transform.position;
         ResetSelection();
         UpdateTargetDisplay();
+
+        cannonMoveSwipe.Fire += FireCannon;
+        cannonMoveSwipe.Rotate += RotateCannon;
     }
 
     private void Update()
     {
-        aimTarget.transform.position = currentAim;
-        TimeStep();
+        //aimTarget.transform.position = currentAim;
+        //SquaredCannonAimPattern();
+        //UpdateCannon();
+    }
+
+    private void RotateCannon(Vector2 swipeDelta)
+    {
+        float rot = swipeDelta.magnitude;
+
+        if (swipeDelta.x < 0)
+        {
+            rot *= -1;
+        }
+
+        Debug.Log($"Rotating Cannon with {rot} degrees..");
+        cannonHead.Rotate(new Vector3(0, rot, 0));
+    }
+
+    private void FireCannon(float inputTime)
+    {
+        aimTarget.transform.position = cannonHead.transform.position + (cannonHead.transform.forward * inputTime * firePowerIncrement) * -1;
+        ShootCannon();
+    }
+
+    private void UpdateCannon()
+    {
+        if (shootingState == ShootingState.Rotating)
+        {
+            cannonHead.Rotate(new Vector3(0, rotationSpeed, 0) * Time.deltaTime);
+        }
+
+        if (shootingState == ShootingState.Firing)
+        {
+            _accumulatedFirePower += firePowerIncrement * Time.deltaTime;
+        }
 
         if (Keyboard.current.spaceKey.wasPressedThisFrame)
         {
-            if (!selectedX && (currentDirection == Direction.Left || currentDirection == Direction.Right))
-            {
-                currentDirection = RandomUpOrDown;
-                selectedX = true;
-                return;
-            }
-
-            if (!selectedY && (currentDirection == Direction.Up || currentDirection == Direction.Down))
-            {
-                currentDirection = RandomLeftOrRight;
-                selectedY = true;
-                return;
-            }
+            shootingState = ShootingState.Firing;
         }
 
-        if (selectedX && selectedY)
+        if (Keyboard.current.spaceKey.wasReleasedThisFrame)
         {
             ShootCannon();
+            _accumulatedFirePower = 0;
+            shootingState = ShootingState.Rotating;
         }
+
+        // update aim target
+        aimTarget.transform.position = cannonHead.transform.position + (cannonHead.transform.forward * _accumulatedFirePower) * -1;
     }
-
-
-    private void ShootCannon()
+    private void AlternateCannonFire()
     {
         if (shootCounter % combinerInterval == combinerInterval - 1)
         {
@@ -80,11 +120,16 @@ public class Cannon : MonoBehaviour
         }
         else
         {
-            PlaceTower();
+          PlaceTower();
         }
 
-        shootCounter++;
         UpdateTargetDisplay();
+    }
+    private void ShootCannon()
+    {
+        PlaceTower();
+        shootCounter++;
+        
         levelGrid.IsGridDirty = true;
         ResetSelection();
     }
@@ -156,8 +201,32 @@ public class Cannon : MonoBehaviour
         Gizmos.DrawRay(transform.position + (levelGrid.FloorPlane.transform.up * 5), downDirection*100);
     }
 
-    private void TimeStep()
+
+    // makes the cannon move from left to right and then up and down before placements
+    private void SquaredCannonAimPattern()
     {
+        if (Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            if (!selectedX && (currentDirection == Direction.Left || currentDirection == Direction.Right))
+            {
+                currentDirection = RandomUpOrDown;
+                selectedX = true;
+                return;
+            }
+
+            if (!selectedY && (currentDirection == Direction.Up || currentDirection == Direction.Down))
+            {
+                currentDirection = RandomLeftOrRight;
+                selectedY = true;
+                return;
+            }
+        }
+
+        if (selectedX && selectedY)
+        {
+            ShootCannon();
+        }
+
 
         switch (currentDirection)
         {
