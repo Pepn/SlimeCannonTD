@@ -3,55 +3,102 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
+using Sirenix.OdinInspector;
+
 public class CannonMoveSwipe : MonoBehaviour
 {
-    [SerializeField] private InputAction position, press;
-    [SerializeField] private float swipeThreshhold = 10;
+    [SerializeField] private InputAction position, press, pressHold;
+    [SerializeField] private float swipeThreshhold = 25;
+    [SerializeField] private float minFirePowerThreshhold = 0.2f;
+    [SerializeField] private float shootAndRotateTimeThreshhold = 0.5f;
+
     private Vector2 initialPos;
-    private double startPressTime;
+    private float startPressTime;
     private Vector2 currentPos => position.ReadValue<Vector2>();
 
     public UnityAction<Vector2> Rotate;
-    public UnityAction<float> Fire;
+    public UnityAction Fire;
+    public UnityAction StartFiring;
+    public UnityAction StartRotating;
+    public UnityAction<float> FirePower;
+    [SerializeField, ReadOnly] private bool isPressing = false;
+    [SerializeField, ReadOnly] private bool isSwiping = false;
+    [SerializeField, ReadOnly] private bool isShooting = false;
+    [SerializeField, ReadOnly] private Vector2 inputDelta;
+    [SerializeField, ReadOnly] private float timeDelta;
 
     private void Awake()
     {
         position.Enable();
         press.Enable();
-        press.performed += _ => OnStartPress();
-        press.canceled += _ => DetectInput();
+        pressHold.Enable();
+        press.started += _ => OnStartPress();
+        press.canceled += _ => ReleaseInput();
+    }
 
+    private void Update()
+    {
+        if (isPressing)
+        {
+            UpdateFirePower();
+
+            if (isShooting)
+            {
+                return;
+            }
+
+            // should account for screen resolution
+            inputDelta = currentPos - initialPos;
+
+            if (inputDelta.magnitude > swipeThreshhold)
+            {
+                StartRotating?.Invoke();
+                isSwiping = true;
+            }
+        }
+    }
+
+    private void UpdateFirePower()
+    {
+        //for some reason detect swipe is called twice on release catch this bug
+        timeDelta = Time.time - startPressTime;
+
+        //delay updating the start firing visuals
+        if (timeDelta > shootAndRotateTimeThreshhold)
+        {
+            isShooting = true;
+            StartFiring?.Invoke();
+        }
+
+        FirePower.Invoke((float)timeDelta);
     }
 
     private void OnStartPress()
     {
+        Debug.LogWarning("ON START PRESS");
         initialPos = currentPos;
-        startPressTime = Time.timeAsDouble;
+        startPressTime = Time.time;
+
+        isPressing = true;
     }
 
-    private void DetectInput()
+    private void ReleaseInput()
     {
-        // should account for screen resolution
-        Vector2 delta = currentPos - initialPos;
-
-        //for some reason detect swipe is called twice on release catch this bug
-        double timeDelta = Time.timeAsDouble - startPressTime;
-
-        if (timeDelta < 0.01f)
+        if (isSwiping)
         {
-            return;
-        }
-
-        if (delta.magnitude > swipeThreshhold)
-        {
-            Debug.LogWarning($"Swiped.. {delta}");
-            Rotate?.Invoke(delta);
+            Rotate?.Invoke(inputDelta);
         }
         else
         {
-            Fire?.Invoke((float)timeDelta);
+            if (timeDelta > minFirePowerThreshhold)
+            {
+                Fire?.Invoke();
+            }
         }
 
-        Debug.LogWarning($"Swipe/Press duration: {timeDelta} s");
+        isPressing = false;
+        isSwiping = false;
+        inputDelta = Vector2.zero;
+        isShooting = false;
     }
 }

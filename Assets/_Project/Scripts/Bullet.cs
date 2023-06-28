@@ -12,7 +12,7 @@ public class Bullet : MonoBehaviour
     public void SetTarget(Transform target) => this.target = target;
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         if (target == null)
         {
@@ -33,9 +33,8 @@ public class Bullet : MonoBehaviour
         transform.Translate(dir.normalized * distanceThisFrame, Space.World);
     }
 
-    void HitTarget()
+    private void HitTarget()
     {
-        Debug.Log("HIT ENEMY!");
         target.GetComponent<Enemy>().ChangeHealth(-Damage);
         Destroy(this.gameObject);
     }

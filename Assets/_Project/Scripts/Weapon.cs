@@ -71,7 +71,6 @@ public class Weapon : MonoBehaviour
         {
             if (IsInRange(e))
             {
-                Debug.Log("Set Target.");
                 target = e;
                 target.OnDeath += UnTargetEnemy;
                 break;
@@ -81,7 +80,6 @@ public class Weapon : MonoBehaviour
 
     private void UnTargetEnemy()
     {
-        Debug.Log("Untargeting Death Enemy.");
         target = null;
     }
 

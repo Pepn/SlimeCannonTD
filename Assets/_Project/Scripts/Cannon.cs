@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering.Universal;
 
 public class Cannon : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class Cannon : MonoBehaviour
     [SerializeField, Required, FoldoutGroup("References")] private LevelGrid levelGrid;
     [SerializeField, Required, FoldoutGroup("References")] private Transform cannonHead;
     [SerializeField, Required, FoldoutGroup("References")] private CannonMoveSwipe cannonMoveSwipe;
+    [SerializeField, Required, FoldoutGroup("References")] private Rigidbody cannonPlatformRb;
 
     [SerializeField, FoldoutGroup("Settings")] private int combinerInterval;
     [SerializeField, FoldoutGroup("Settings"), Range(1, 10)] private float speed;
@@ -46,16 +48,31 @@ public class Cannon : MonoBehaviour
 
     private ShootingState shootingState = ShootingState.Rotating;
     private Direction currentDirection = Direction.Up;
-    private void Start()
+    private void Awake()
     {
         world = GameManager.Instance.World;
         selectionBounds = inputArea.GetComponent<BoxCollider>().bounds;
         startPosition = transform.position;
         ResetSelection();
         UpdateTargetDisplay();
+    }
 
+    private void OnEnable()
+    {
         cannonMoveSwipe.Fire += FireCannon;
         cannonMoveSwipe.Rotate += RotateCannon;
+        cannonMoveSwipe.StartFiring += EnableTarget;
+        cannonMoveSwipe.StartRotating += DisableTarget;
+        cannonMoveSwipe.FirePower += UpdateFirePower;
+    }
+
+    private void OnDisable()
+    {
+        cannonMoveSwipe.Fire -= FireCannon;
+        cannonMoveSwipe.Rotate -= RotateCannon;
+        cannonMoveSwipe.StartFiring -= EnableTarget;
+        cannonMoveSwipe.StartRotating -= DisableTarget;
+        cannonMoveSwipe.FirePower -= UpdateFirePower;
     }
 
     private void Update()
@@ -65,9 +82,32 @@ public class Cannon : MonoBehaviour
         //UpdateCannon();
     }
 
+    private void EnableTarget()
+    {
+        Debug.LogWarning("Enable Target");
+        aimTarget.GetComponent<DecalProjector>().enabled = true;
+    }
+
+    private void DisableTarget()
+    {
+        Debug.LogWarning("Enable Target");
+        aimTarget.GetComponent<DecalProjector>().enabled = false;
+    }
+
+    private void UpdateFirePower(float inputTime)
+    {
+        //Debug.Log($"Fire POwer!!");
+        aimTarget.transform.position = cannonHead.transform.position + (cannonHead.transform.forward * inputTime * firePowerIncrement) * -1;
+    }
+
     private void RotateCannon(Vector2 swipeDelta)
     {
-        float rot = swipeDelta.magnitude;
+        float percentageSwipeWidth = swipeDelta.x / (float)Screen.width;
+        float percentageSwipeHeight = swipeDelta.y / (float)Screen.height;
+
+        float screenSwipePercentage = swipeDelta.magnitude / (float)Math.Sqrt((Screen.width * Screen.width) + (Screen.height * Screen.height));
+
+        float rot = screenSwipePercentage * cannonPlatformRb.mass;
 
         if (swipeDelta.x < 0)
         {
@@ -75,42 +115,16 @@ public class Cannon : MonoBehaviour
         }
 
         Debug.Log($"Rotating Cannon with {rot} degrees..");
-        cannonHead.Rotate(new Vector3(0, rot, 0));
+        cannonPlatformRb.AddTorque(new Vector3(0, 0, rot), ForceMode.Force);
     }
 
-    private void FireCannon(float inputTime)
+    private void FireCannon()
     {
-        aimTarget.transform.position = cannonHead.transform.position + (cannonHead.transform.forward * inputTime * firePowerIncrement) * -1;
+        Debug.LogWarning("Disable Target");
         ShootCannon();
+        aimTarget.GetComponent<DecalProjector>().enabled = false;
     }
 
-    private void UpdateCannon()
-    {
-        if (shootingState == ShootingState.Rotating)
-        {
-            cannonHead.Rotate(new Vector3(0, rotationSpeed, 0) * Time.deltaTime);
-        }
-
-        if (shootingState == ShootingState.Firing)
-        {
-            _accumulatedFirePower += firePowerIncrement * Time.deltaTime;
-        }
-
-        if (Keyboard.current.spaceKey.wasPressedThisFrame)
-        {
-            shootingState = ShootingState.Firing;
-        }
-
-        if (Keyboard.current.spaceKey.wasReleasedThisFrame)
-        {
-            ShootCannon();
-            _accumulatedFirePower = 0;
-            shootingState = ShootingState.Rotating;
-        }
-
-        // update aim target
-        aimTarget.transform.position = cannonHead.transform.position + (cannonHead.transform.forward * _accumulatedFirePower) * -1;
-    }
     private void AlternateCannonFire()
     {
         if (shootCounter % combinerInterval == combinerInterval - 1)
@@ -120,11 +134,12 @@ public class Cannon : MonoBehaviour
         }
         else
         {
-          PlaceTower();
+            PlaceTower();
         }
 
         UpdateTargetDisplay();
     }
+
     private void ShootCannon()
     {
         PlaceTower();
@@ -177,7 +192,7 @@ public class Cannon : MonoBehaviour
     private Vector3 PlaneHitPoint()
     {
         Vector3 downDirection = -levelGrid.FloorPlane.transform.up;
-        Physics.Raycast(transform.position + (levelGrid.FloorPlane.transform.up * 5), downDirection, out RaycastHit hit, 100, LayerMask.GetMask("Floor"));
+        Physics.Raycast(aimTarget.transform.position + (levelGrid.FloorPlane.transform.up * 5), downDirection, out RaycastHit hit, 100, LayerMask.GetMask("Floor"));
         return hit.point;
     }
 
